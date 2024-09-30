@@ -12,5 +12,5 @@ class MainCog(commands.Cog):
         logging.info(f'Logged in as {self.bot.user.name}')
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(MainCog(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(MainCog(bot))
