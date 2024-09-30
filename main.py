@@ -1,18 +1,16 @@
 import os
 import logging
 
+import discord
 from dotenv import load_dotenv
-from discord.ext import commands
 
-load_dotenv()
+from bot import EsBot
 
 logging.basicConfig(level=logging.INFO)
 
-bot = commands.Bot(command_prefix='es!')
+bot = EsBot(command_prefix='es!', intents=discord.Intents.all())
 
-for filename in os.listdir('./cogs'):
-    if filename.endswith('.py'):
-        bot.load_extension(f'cogs.{filename[:-3]}')
-        logging.info(f'Loaded {filename[:-3]}')
+
+load_dotenv()
 
 bot.run(os.getenv('DISCORD_TOKEN'))
