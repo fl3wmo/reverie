@@ -1,3 +1,5 @@
+import logging
+
 from discord.ext import commands
 
 
@@ -7,7 +9,7 @@ class MainCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f'Logged in as {self.bot.user.name}')
+        logging.info(f'Logged in as {self.bot.user.name}')
 
 
 def setup(bot: commands.Bot):
