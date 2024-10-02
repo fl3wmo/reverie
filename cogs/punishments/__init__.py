@@ -1,7 +1,10 @@
 from discord.ext import commands
 
-from cogs.punishments.base import PunishmentsBase
+import cogs.punishments.base as base
+import cogs.punishments.mutes as mutes
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(PunishmentsBase(bot))
+    cog_list = (base, mutes)
+    for cog in cog_list:
+        await cog.setup(bot)
