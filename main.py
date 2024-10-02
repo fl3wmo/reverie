@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 import discord
 from dotenv import load_dotenv
@@ -10,7 +10,9 @@ logging.basicConfig(level=logging.INFO)
 
 bot = EsBot(command_prefix='es!', intents=discord.Intents.all())
 
-
 load_dotenv()
 
-bot.run(os.getenv('DISCORD_TOKEN'))
+if (token := os.getenv('DISCORD_TOKEN')) is None:
+    raise EnvironmentError('DISCORD_TOKEN is not set')
+
+bot.run(token)
