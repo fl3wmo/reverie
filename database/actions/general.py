@@ -1,33 +1,13 @@
 import datetime
-from dataclasses import dataclass
-from typing import Literal
+import typing
 
+import discord
 from motor.motor_asyncio import AsyncIOMotorCollection as MotorCollection
 
-type action = Literal[
-    'role_approve', 'role_reject', 'role_remove',
-    'ban_give', 'ban_remove',
-    'warn_give', 'warn_remove',
-    'global_ban_give', 'global_ban_remove',
-    'mute_text_give', 'mute_text_remove',
-    'mute_voice_give', 'mute_voice_remove',
-    'mute_full_give', 'mute_full_remove',
-    'temp_mute_give', 'temp_mute_remove',
-]
+from database.actions.action import Act, action
 
-@dataclass
-class Act:
-    id: int
-    at: datetime.datetime
-    user: int
-    guild: int
-    moderator: int
-    type: action
-    counting: bool
-    reviewer: int = None
-    duration: float = None
-    reason: str = None
-    prove_link: str = None
+if typing.TYPE_CHECKING:
+    from bot import EsBot
 
 
 class Actions:
@@ -37,15 +17,16 @@ class Actions:
     async def get(self, act_id: int) -> Act:
         return Act(**await self._collection.find_one({'id': act_id}))
 
-    async def by_user(self, user: int) -> list[Act]:
-        return [Act(**doc) async for doc in self._collection.find({'user': user})]
+    async def by_user(self, user: int, *, counting: bool = False) -> list[Act]:
+        return [Act(**doc) async for doc in self._collection.find({'user': user} if not counting else {'user': user, 'counting': True})]
 
     async def record(
             self, user: int, guild: int,
             moderator: int, action_type: action, *,
             counting: bool = True, duration: float = None,
-            reason: str = None, prove_link: str = None
-    ) -> int:
+            reason: str = None, prove_link: str = None,
+            auto_review: bool = False
+    ) -> Act:
         act_id = (await self._collection.count_documents({})) + 1
         act = Act(
             id=act_id,
@@ -53,11 +34,32 @@ class Actions:
             user=user,
             guild=guild,
             moderator=moderator,
+            reviewer=moderator if auto_review else None,
             type=action_type,
             counting=counting,
             duration=duration,
             reason=reason,
             prove_link=prove_link
         )
-        await self._collection.insert_one(act.__dict__)
-        return act_id
+        await self._collection.insert_one(act.as_dict)
+        return act
+
+    async def set_prove_link(self, act_id: int, link: str) -> None:
+        await self._collection.update_one({'id': act_id}, {'$set': {'prove_link': link}})
+
+    async def deactivate(self, act_id: int, reviewer: int) -> None:
+        await self._collection.update_one({'id': act_id}, {'$set': {'reviewer': reviewer, 'counting': False}})
+    
+    async def approve(self, act_id: int, reviewer: int, client: 'EsBot' = None, interaction: discord.Interaction = None) -> None:
+        act = await self.get(act_id)
+        if 'ban' in act.type and 'give' in act.type:
+            bans = client.get_cog('ban')
+            await bans.on_approve(act_id)
+        elif 'warn' in act.type:
+            warns = client.get_cog('warn')
+            if 'give' in act.type:
+                member, user = await client.getch_any(interaction.guild, act.user, interaction.user)
+                await warns.on_approve(interaction, act_id, user)
+            elif 'remove' in act.type:
+                await warns.on_remove_approve(act_id)
+        await self._collection.update_one({'id': act_id}, {'$set': {'reviewer': reviewer}})
