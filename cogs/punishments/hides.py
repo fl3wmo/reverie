@@ -15,7 +15,7 @@ class HideCog(commands.GroupCog, name='hide'):
     def __init__(self, bot: EsBot):
         self.bot = bot
 
-    @app_commands.command(name='give', description='Предупредить пользователя')
+    @app_commands.command(name='give', description='Скрыть пользователя')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(
         user='Пользователь, которого нужно скрыть',
@@ -34,9 +34,9 @@ class HideCog(commands.GroupCog, name='hide'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @app_commands.command(name='remove', description='Снять предупреждение с пользователя')
+    @app_commands.command(name='remove', description='Убрать скрытие с пользователя')
     @app_commands.rename(user='пользователь')
-    @app_commands.describe(user='Пользователь, с которого нужно снять предупреждение')
+    @app_commands.describe(user='Пользователь, с которого нужно убрать скрытие')
     @security.restricted(security.PermissionLevel.MD)
     async def hide_remove(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
