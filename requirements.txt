@@ -1,3 +1,9 @@
-discord~=2.3.2
 python-dotenv~=1.0.1
 motor~=3.6.0
+discord.py~=2.4.0
+pymongo~=4.9.1
+fuzzywuzzy~=0.18.0
+python-Levenshtein~=0.26.0
+
+discord~=2.3.2
+aiosqlite~=0.20.0

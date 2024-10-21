@@ -1,18 +1,19 @@
 import datetime
+import logging
 import re
-import functools
 
 import discord
+from discord import app_commands
 
 import security
-
 
 _action_types = {
     'ban': 'Бан',
     'kick': 'Кик',
     'mute': 'Мут',
     'warn': 'Варн',
-    'hide': 'Хайд'
+    'hide': 'Хайд',
+    'role': "роли"
 }
 
 _action_notes = {
@@ -28,13 +29,18 @@ _action_notes = {
 }
 
 
-def action(action_type: str) -> str:
+def action(action_type: str, *, short: bool = False) -> str:
+    if short:
+        action_type = action_type.replace('give', '').replace('remove', '')
     result = [name for template_note_type, name in _action_notes.items() if template_note_type in action_type]
     result += [name for template_action_type, name in _action_types.items() if template_action_type in action_type]
     return ' '.join(result).capitalize()
 
 
-def user(obj: discord.Member | discord.User) -> str:
+def user(obj: discord.Member | discord.User | int) -> str:
+    if isinstance(obj, int):
+        return f'<@{obj}>'
+    
     result = obj.mention
     if tag := security.user_tag(obj):
         result += f' ({tag})'
@@ -52,12 +58,12 @@ def time(seconds: float | None) -> str:
     elif seconds < 86400:
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
-        return f"{hours} ч. {minutes} мин."
+        return f"{hours} ч." + (f' {minutes} мин.' if minutes else '')
     return f"{seconds // 86400} дн."
 
 
-def date(obj: datetime.datetime) -> str:
-    return f'<t:{int(obj.astimezone(datetime.UTC).timestamp())}:f>'
+def date(obj: datetime.datetime, *, date_format: str = 'f') -> str:
+    return f'<t:{int(obj.astimezone(datetime.UTC).timestamp())}:{date_format}>'
 
 
 def link(obj: str, alias: str = 'Ссылка') -> str:
@@ -79,48 +85,65 @@ def embed_mentions(embed: discord.Embed) -> str:
                 continue
             all_text += field.value
     groups = _mention_regex.findall(all_text)
+    groups = list(set(groups))
     return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||'
 
 
-async def link_action(interaction: discord.Interaction, act, **objects) -> None:
-    message = await act.log(interaction.guild, **objects)
-    await interaction.response.send_message(
-        f'## 🥳 Успех!\n[Действие]({message.jump_url}) успешно выполнено.',
-        ephemeral=True
-    )
+async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, **objects) -> None:
+    if screenshot:
+        await interaction.response.send_message('### 📸 Скриншот сообщений\nОжидайте...', ephemeral=True)
+    message = await act.log(interaction.guild, screenshot, target_message, db, **objects)
+
+    if screenshot:
+        await interaction.edit_original_response(content=f'## 🥳 Успех!\n[Действие]({message.jump_url}) успешно выполнено.', view=None)
+    elif not interaction.response.is_done():
+        await interaction.response.send_message(
+            f'## 🥳 Успех!\n[Действие]({message.jump_url}) успешно выполнено.',
+            ephemeral=True
+        )
+
+    await act.notify_user(**objects)
 
 
-def parse_duration(duration: str, default_unit: str) -> int:
-    match = re.match(r"^(\d+)([сmчд]?)$", duration)
-    if not match:
-        raise ValueError("Неправильный формат длительности. Используйте 1с, 1м, 1ч.\n"
-                         "Также можно использовать число без единицы для секунд.")
-
-    value, unit = int(match.group(1)), match.group(2) or default_unit
-    if unit == 'с':
-        return value
-    elif unit == 'м':
-        return value * 60
-    elif unit == 'ч':
-        return value * 3600
-    elif unit == 'д':
-        return value * 86400
+async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError | str):
+    if isinstance(error, app_commands.CommandOnCooldown):
+        await interaction.response.send_message(
+            f"Команда ещё недоступна! Попробуйте ещё раз через **{error.retry_after:.2f}** сек!",
+            ephemeral=True
+        )
+    elif isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message("У вас нет прав", ephemeral=True)
+    elif isinstance(error, app_commands.CommandInvokeError) or isinstance(error, str):
+        embed = discord.Embed(
+            title='💀 Произошла ошибка',
+            description=str(error.original if isinstance(error, app_commands.CommandInvokeError) else error),
+            color=discord.Color.dark_grey()
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
-        raise ValueError("Неизвестная единица времени.")
+        logging.warning(f'Error: {error}')
+        await interaction.response.send_message("Произошла ошибка", ephemeral=True)
 
+def user_notify_description(act, **objects):
+    description = f'### Доброго времени суток, {objects['user'].mention}.\n'
+    if act.type != 'role_approve':
+        if 'role' not in act.type:
+            description += f'Вы получили наказание от модератора {objects["moderator"].mention}.\n'
+        else:
+            if 'remove' in act.type:
+                description += 'Вам была снята роль.\n'
+            else:
+                description += 'Ваше заявление на роль было отклонено.\n'
+        description += "-# В случае, если вы не согласны с действиями модератора, вы можете подать жалобу на [форум проекта](https://forum.radmir.games)."
+    return description
 
-def duration_formatter(default_unit: str = 'с'):
-    def decorator(func):
-        @functools.wraps(func)
-        async def wrapper(self, interaction, user, duration, reason, *args, **kwargs):
-            try:
-                duration_in_seconds = parse_duration(duration, default_unit)
-            except ValueError as e:
-                await interaction.response.send_message(str(e), ephemeral=True)
-                return
+def role_requested(nickname, role, rang):
+    embed = discord.Embed(title='Заявление на роль отправлено', color=discord.Color.gold(), timestamp=discord.utils.utcnow())
+    embed.add_field(name='Никнейм', value=nickname, inline=True)
+    embed.add_field(name='Должность', value=rang, inline=True)
+    embed.add_field(name='Организация', value=role, inline=False)
+    embed.set_footer(text='Время отправки заявления')
+    return embed
 
-            return await func(self, interaction, user, duration_in_seconds, reason, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
+def role(role):
+    return f'<&{role}>'

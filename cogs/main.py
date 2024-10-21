@@ -10,6 +10,7 @@ class MainCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f'Logged in as {self.bot.user.name}')
+        await self.bot.tree.sync()
 
 
 async def setup(bot: commands.Bot):

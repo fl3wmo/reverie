@@ -9,7 +9,8 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCollection as MotorCollection
 
 if typing.TYPE_CHECKING:
-    from database.actions.general import Actions, Act
+    from database.actions.general import Actions
+    from database.actions.action import Act
 
 
 @dataclass
@@ -100,14 +101,14 @@ class Mutes:
         
         return action, mute
 
-    async def remove(self, user: int, guild: int, moderator: int, mute_type: Literal['voice', 'text', 'full']) -> 'Act':
+    async def remove(self, user: int, guild: int, moderator: int, mute_type: Literal['voice', 'text', 'full'], auto_review: bool = False) -> 'Act':
         mute = await self._collection.find_one({'user': user, 'type': mute_type, 'guild': guild})
         if not mute:
             raise ValueError('У пользователя нет мута на этом сервере')
 
         action = await self._actions.record(
             user, guild, moderator, f'mute_{mute_type}_remove',
-            counting=False
+            counting=False, auto_review=auto_review or mute.get('moderator') == moderator
         )
 
         await self._collection.delete_one({'_id': mute['_id']})

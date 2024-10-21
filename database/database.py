@@ -1,12 +1,20 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from database.actions.general import Actions
+from database.online.general import OnlineDatabase
 from database.punishments.general import Punishments
+from database.roles.general import Roles
 
 
 class Database:
     def __init__(self):
-        self._client = AsyncIOMotorClient('mongodb://localhost:27017')
+        self._client = AsyncIOMotorClient('mongodb+srv://kotow:nf0a9qp6QzShMvn5@fireteam.7mcefhy.mongodb.net/?retryWrites=true&w=majority&appName=FireTeam')
         self._db = self._client['EsBot']
         self.actions = Actions(self._db['actions'])
         self.punishments = Punishments(self._client, self.actions)
+        self.roles = Roles(self._client, self.actions)
+        self.online = OnlineDatabase('online.sqlite')
+
+    async def on_load(self):
+        await self.online.init_db()
+    

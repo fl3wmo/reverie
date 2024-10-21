@@ -1,13 +1,28 @@
+import enum
 import functools
 
 import discord
 
+from templates import on_tree_error
+
+
+class PermissionLevel(enum.IntEnum):
+    MD = 1
+    SMD = 2
+    AD = 3
+    GMD = 4
+    DS = 5
+    CUR = 6
+
+
 _moderator_levels = {
+    0: ('', "everyone"),
     1: ('MD', "Модератор"),
     2: ('SMD', "Ст. Модератор"),
     3: ('AD', "Ассистент Discord"),
     4: ('GMD', "Главный Модератор"),
-    5: ('DS', "Следящий за Discord")
+    5: ('DS', "Следящий за Discord"),
+    6: ('K', "Куратор")
 }
 
 
@@ -38,12 +53,15 @@ def user_tag(user: discord.Member | discord.User) -> str:
     return _moderator_info(user)[1][0]
 
 
-def restricted(level: int):
+def restricted(level: PermissionLevel):
     def wrapper(func):
         @functools.wraps(func)
         async def inner(*args, **kwargs):
-            user = args[1].user
+            interaction = args[1]
+            user = interaction.user
             if user_level(user) < level:
+                if interaction.type == discord.InteractionType.component:
+                    return await on_tree_error(interaction, 'У вас нет прав для выполнения этой команды.')
                 raise ValueError('У вас нет прав для выполнения этой команды.')
             return await func(*args, **kwargs)
         return inner
