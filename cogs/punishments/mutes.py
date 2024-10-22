@@ -260,6 +260,8 @@ async def apply_mute_action(user: discord.Member, mute_role: discord.Role, actio
             if mute_role in user.roles:
                 raise ValueError('Пользователь уже в муте.')
             await user.add_roles(mute_role)
+            if mute_role.permissions.speak == False and user.voice is not None:
+                await user.edit(voice_channel=None)
     except discord.Forbidden:
         raise ValueError('У меня нет прав.')
 
