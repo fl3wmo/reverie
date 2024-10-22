@@ -24,7 +24,9 @@ class AbstractUser:
         
 async def date_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
     dates = [datetime.datetime.now() - datetime.timedelta(days=i) for i in range(7)]
-    dates = [date for date in dates if current in date.strftime('%d.%m.%Y')]
+    if current.strip():
+        found_dates = [date for date in dates if current in date.strftime('%d.%m.%Y')]
+        dates = found_dates or dates
 
     def description(date: datetime.datetime) -> str:
         if date.date() == datetime.datetime.now().date():
