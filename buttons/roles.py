@@ -164,7 +164,7 @@ class ReviewPartialApproveRole(discord.ui.DynamicItem[discord.ui.Button], templa
                 label='Частично верно',
                 style=discord.ButtonStyle.blurple,
                 custom_id=f'roles:review_partial_approve:{action_id}',
-                emoji='\N{THUMBS UP SIGN}',
+                emoji='🤷‍♂️',
             )
         )
         self.handler = RoleRequestHandler(action_id)
@@ -180,8 +180,8 @@ class ReviewPartialApproveRole(discord.ui.DynamicItem[discord.ui.Button], templa
         request = await db.roles.get_request_by_id(self.handler.action_id)
 
         view = discord.ui.View()
-        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS UP SIGN}',
-                                        style=discord.ButtonStyle.grey, disabled=True))
+        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='🤷‍♂️',
+                                        style=discord.ButtonStyle.blurple, disabled=True))
 
         await self.handler.edit_interaction_message(interaction, request, view)
 
