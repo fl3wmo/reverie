@@ -122,8 +122,8 @@ class RejectRole(discord.ui.DynamicItem[discord.ui.Select], template='roles:reje
     @security.restricted(security.PermissionLevel.MD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         selected_options = interaction.data['values']
-        reasons = [f'### {v[0]} {k}\n{v[1]}' for k, v in db.roles.reasons_dict.items() if k in selected_options]
-        reason = '\n'.join(reasons)
+        reasons = [f'**{v[0]} {k}**\n{v[1]}' for k, v in db.roles.reasons_dict.items() if k in selected_options]
+        reason = '\n\n'.join(reasons)
         await db.roles.check_request(interaction.user.id, self.handler.action_id, False, reason)
         request = await db.roles.get_request_by_id(self.handler.action_id)
         await self.handler.edit_interaction_message(interaction, request)
