@@ -22,6 +22,19 @@ class AbstractUser:
         self.id = _id
         self.guild = guild
         
+async def date_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    dates = [datetime.datetime.now() - datetime.timedelta(days=i) for i in range(7)]
+    dates = [date for date in dates if current in date.strftime('%d.%m.%Y')]
+
+    def description(date: datetime.datetime) -> str:
+        if date.date() == datetime.datetime.now().date():
+            return ' (Сегодня)'
+        if date.date() == (datetime.datetime.now() - datetime.timedelta(days=1)).date():
+            return ' (Вчера)'
+        return ''
+
+    return [app_commands.Choice(name=date.strftime('%d.%m.%Y') + description(date), value=date.strftime('%d.%m.%Y')) for date in dates]
+
 
 class OnlineCog(commands.Cog):
     def __init__(self, bot: EsBot):
@@ -29,6 +42,13 @@ class OnlineCog(commands.Cog):
         self.db = db.online
 
     @app_commands.command()
+    @app_commands.rename(user='пользователь', date='дата', is_open='открытые-каналы')
+    @app_commands.describe(
+        user='Пользователь, чей онлайн вы хотите проверить',
+        date='Дата в формате dd.mm.YYYY',
+        is_open='Подсчитывать онлайн только в открытых каналах.'
+    )
+    @app_commands.autocomplete(date=date_autocomplete)
     async def online(self, interaction: discord.Interaction,
                      user: discord.Member,
                      date: str,
