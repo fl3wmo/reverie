@@ -63,7 +63,7 @@ class OnlineCog(commands.Cog):
         if not user:
             user = interaction.user
         info = await self.db.get_info(is_open, user_id=user.id, guild_id=interaction.guild.id, date=date)
-        await interaction.response.send_message(embed=info.to_embed(user, is_open, date), view=online_reload(user.id, interaction.user.id, interaction.guild.id, is_open, date))
+        await interaction.response.send_message(embed=info.to_embed(user.id, is_open, date), view=online_reload(user.id, interaction.user.id, interaction.guild.id, is_open, date))
 
     async def join(self, member: discord.Member, channel: discord.VoiceChannel) -> None:
         await self.db.add_join_info(member, channel, is_counting(channel))
