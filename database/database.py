@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from database.actions.general import Actions
@@ -8,7 +11,9 @@ from database.roles.general import Roles
 
 class Database:
     def __init__(self):
-        self._client = AsyncIOMotorClient('mongodb+srv://kotow:nf0a9qp6QzShMvn5@fireteam.7mcefhy.mongodb.net/?retryWrites=true&w=majority&appName=FireTeam')
+        load_dotenv()
+        
+        self._client = AsyncIOMotorClient(os.getenv('MONGODB'))
         self._db = self._client['EsBot']
         self.actions = Actions(self._db['actions'])
         self.punishments = Punishments(self._client, self.actions)
