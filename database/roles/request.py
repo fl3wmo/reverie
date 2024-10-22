@@ -26,6 +26,7 @@ class RoleRequest:
     role: str
     rang: int
     approved: bool
+    counting: bool
     sent_at: datetime.datetime
     status_message: int
     moderator: int = None

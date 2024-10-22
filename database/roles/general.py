@@ -35,7 +35,7 @@ class Roles:
     async def add_request(self, user: int, guild: int, nickname: str, role: str, rang: int, status_message: int) -> RoleRequest:
         req_id = (await self._col.count_documents({})) + 1
         req = RoleRequest(
-            id=req_id, user=user, guild=guild, nickname=nickname, role=role, rang=rang,
+            id=req_id, user=user, guild=guild, nickname=nickname, role=role, rang=rang, counting=True,
             approved=False, sent_at=datetime.datetime.now(datetime.timezone.utc), status_message=status_message
         )
         await self._col.insert_one(req.to_dict())
@@ -55,10 +55,12 @@ class Roles:
             }}
         )
 
-    async def review_request(self, reviewer: int, request_id: int, approve: bool) -> None:
+    async def review_request(self, reviewer: int, request_id: int, approve: bool, partial: bool = False) -> None:
         update = {'$set': {'reviewer': reviewer}}
         if not approve:
             request = await self.get_request_by_id(request_id)
             update['$set']['approved'] = not request.approved
+        if partial:
+            update['$set']['counting'] = False
         await self._col.update_one({'id': request_id}, update)
         

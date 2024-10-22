@@ -9,7 +9,7 @@ from buttons.links import ForumLink
 
 def load_buttons(bot: commands.Bot):
     bot.add_dynamic_items(
-        buttons.roles.TakeRole, buttons.roles.ApproveRole, buttons.roles.RejectRole, buttons.roles.ReviewApproveRole, buttons.roles.ReviewRejectRole,
+        buttons.roles.TakeRole, buttons.roles.ApproveRole, buttons.roles.RejectRole, buttons.roles.ReviewApproveRole, buttons.roles.ReviewPartialApproveRole, buttons.roles.ReviewRejectRole,
         buttons.punishments.ApprovePunishment, buttons.punishments.RejectPunishment,
         buttons.online.OnlineReload
     )
