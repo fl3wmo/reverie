@@ -22,7 +22,7 @@ class AbstractUser:
         self.id = _id
         self.guild = guild
         
-async def date_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+async def date_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
     dates = [datetime.datetime.now() - datetime.timedelta(days=i) for i in range(7)]
     dates = [date for date in dates if current in date.strftime('%d.%m.%Y')]
 
