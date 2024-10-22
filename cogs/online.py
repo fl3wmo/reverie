@@ -41,7 +41,7 @@ class OnlineCog(commands.Cog):
         self.bot = bot
         self.db = db.online
 
-    @app_commands.command()
+    @app_commands.command(name='online', description='Показать онлайн пользователя')
     @app_commands.rename(user='пользователь', date='дата', is_open='открытые-каналы')
     @app_commands.describe(
         user='Пользователь, чей онлайн вы хотите проверить',
