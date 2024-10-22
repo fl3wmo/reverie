@@ -106,6 +106,8 @@ async def link_action(interaction: discord.Interaction, act, screenshot: list[di
 
 
 async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError | str):
+    if interaction.response.is_done():
+        print('Unhandled error:', error)
     if isinstance(error, app_commands.CommandOnCooldown):
         await interaction.response.send_message(
             f"Команда ещё недоступна! Попробуйте ещё раз через **{error.retry_after:.2f}** сек!",
