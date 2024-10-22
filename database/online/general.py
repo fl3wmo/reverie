@@ -139,9 +139,12 @@ class OnlineDatabase:
         all_online = [{'user_id': row[0], 'guild_id': row[1], 'channel_id': row[2], 'channel_name': row[3],
                        'date': row[4], 'seconds': row[5], 'is_counting': row[6]} for row in await cursor.fetchall()]
 
-        cursor = await self.db.execute(
-            "SELECT * FROM current_online WHERE user_id = ? AND guild_id = ? AND is_counting = ?",
-            (user_id, guild_id, is_open))
+        query = "SELECT * FROM current_online WHERE user_id = ? AND guild_id = ?"
+        params = [user_id, guild_id]
+        if is_open:
+            query += " AND is_counting = ?"
+            params.append(is_open)
+        cursor = await self.db.execute(query, params)
         current_online = await cursor.fetchone()
 
         if current_online:
