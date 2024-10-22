@@ -131,7 +131,7 @@ class OnlineDatabase:
         if date:
             query += " AND date = ?"
             params.append(date)
-        if is_open is not None:
+        if is_open:
             query += " AND is_counting = ?"
             params.append(is_open)
 
