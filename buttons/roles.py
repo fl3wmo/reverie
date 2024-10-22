@@ -45,6 +45,34 @@ class RoleRequestHandler:
         embed = request.to_embed()
         await interaction.response.edit_message(content=templates.embed_mentions(embed), embed=embed, view=specified_view or request.to_view())
 
+class TakeRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:take:(?P<id>[0-9]+)'):
+    def __init__(self, action_id: int) -> None:
+        super().__init__(
+            discord.ui.Button(
+                label='Взять роль',
+                style=discord.ButtonStyle.grey,
+                custom_id=f'roles:take:{action_id}',
+                emoji='🔥',
+            )
+        )
+        self.action_id: int = action_id
+
+    @classmethod
+    async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str]):
+        action_id = int(match['id'])
+        return cls(action_id)
+
+    @security.restricted(security.PermissionLevel.MD)
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
+        request = await db.roles.get_request_by_id(self.action_id)
+        if not request or request.moderator:
+            raise ValueError('Заявление уже взято')
+
+        await db.roles.take_request(self.action_id, interaction.user.id)
+        request.moderator = interaction.user.id
+
+        embed = request.to_embed()
+        await interaction.response.edit_message(content=templates.embed_mentions(embed), embed=embed, view=request.to_view())
 
 class ApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:approve:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
@@ -73,44 +101,6 @@ class ApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:app
         member, user = await interaction.client.getch_any(interaction.guild, request.user)
         if member:
             await request.role_info.give(member, request.nickname, request.rang)
-
-class ReviewRejectRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:review_reject:(?P<id>[0-9]+)'):
-    def __init__(self, action_id: int) -> None:
-        super().__init__(
-            discord.ui.Button(
-                label='Неверно',
-                style=discord.ButtonStyle.danger,
-                custom_id=f'roles:review_reject:{action_id}',
-                emoji='\N{THUMBS DOWN SIGN}',
-            )
-        )
-        self.handler = RoleRequestHandler(action_id)
-
-    @classmethod
-    async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str]):
-        action_id = int(match['id'])
-        return cls(action_id)
-
-    @security.restricted(security.PermissionLevel.GMD)
-    async def callback(self, interaction: Interaction[ClientT]) -> Any:
-        await db.roles.review_request(interaction.user.id, self.handler.action_id, False)
-        request = await db.roles.get_request_by_id(self.handler.action_id)
-
-        view = discord.ui.View()
-        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS DOWN SIGN}', style=discord.ButtonStyle.danger, disabled=True))
-
-        await self.handler.edit_interaction_message(interaction, request, view)
-        await self.handler.update_status_message(interaction, request)
-
-        if not await db.roles.is_request_last(request.id, request.user, request.guild):
-            return
-
-        member, user = await interaction.client.getch_any(interaction.guild, request.user)
-        if member:
-            if request.status == RequestStatus.REJECTED:
-                await request.role_info.remove(member)
-            else:
-                await request.role_info.give(member, request.nickname, request.rang)
 
 class RejectRole(discord.ui.DynamicItem[discord.ui.Select], template='roles:reject:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
@@ -167,34 +157,71 @@ class ReviewApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='rol
 
         await self.handler.edit_interaction_message(interaction, request, view)
 
-class TakeRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:take:(?P<id>[0-9]+)'):
+class ReviewPartialApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:review_partial_approve:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
         super().__init__(
             discord.ui.Button(
-                label='Взять роль',
-                style=discord.ButtonStyle.grey,
-                custom_id=f'roles:take:{action_id}',
-                emoji='🔥',
+                label='Частично верно',
+                style=discord.ButtonStyle.blurple,
+                custom_id=f'roles:review_partial_approve:{action_id}',
+                emoji='\N{THUMBS UP SIGN}',
             )
         )
-        self.action_id: int = action_id
+        self.handler = RoleRequestHandler(action_id)
 
     @classmethod
     async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str]):
         action_id = int(match['id'])
         return cls(action_id)
 
-    @security.restricted(security.PermissionLevel.MD)
+    @security.restricted(security.PermissionLevel.GMD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
-        request = await db.roles.get_request_by_id(self.action_id)
-        if not request or request.moderator:
-            raise ValueError('Заявление уже взято')
+        await db.roles.review_request(interaction.user.id, self.handler.action_id, True, partial=True)
+        request = await db.roles.get_request_by_id(self.handler.action_id)
 
-        await db.roles.take_request(self.action_id, interaction.user.id)
-        request.moderator = interaction.user.id
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS UP SIGN}',
+                                        style=discord.ButtonStyle.grey, disabled=True))
 
-        embed = request.to_embed()
-        await interaction.response.edit_message(content=templates.embed_mentions(embed), embed=embed, view=request.to_view())
+        await self.handler.edit_interaction_message(interaction, request, view)
+
+class ReviewRejectRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:review_reject:(?P<id>[0-9]+)'):
+    def __init__(self, action_id: int) -> None:
+        super().__init__(
+            discord.ui.Button(
+                label='Неверно',
+                style=discord.ButtonStyle.danger,
+                custom_id=f'roles:review_reject:{action_id}',
+                emoji='\N{THUMBS DOWN SIGN}',
+            )
+        )
+        self.handler = RoleRequestHandler(action_id)
+
+    @classmethod
+    async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str]):
+        action_id = int(match['id'])
+        return cls(action_id)
+
+    @security.restricted(security.PermissionLevel.GMD)
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
+        await db.roles.review_request(interaction.user.id, self.handler.action_id, False)
+        request = await db.roles.get_request_by_id(self.handler.action_id)
+
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS DOWN SIGN}', style=discord.ButtonStyle.danger, disabled=True))
+
+        await self.handler.edit_interaction_message(interaction, request, view)
+        await self.handler.update_status_message(interaction, request)
+
+        if not await db.roles.is_request_last(request.id, request.user, request.guild):
+            return
+
+        member, user = await interaction.client.getch_any(interaction.guild, request.user)
+        if member:
+            if request.status == RequestStatus.REJECTED:
+                await request.role_info.remove(member)
+            else:
+                await request.role_info.give(member, request.nickname, request.rang)
 
 
 def roles_take(action_id: int) -> discord.ui.View:
@@ -213,4 +240,5 @@ def roles_review(action_id: int) -> discord.ui.View:
     view = discord.ui.View()
     view.add_item(ReviewRejectRole(action_id))
     view.add_item(ReviewApproveRole(action_id))
+    view.add_item(ReviewPartialApproveRole(action_id))
     return view
