@@ -253,8 +253,12 @@ async def create_roles(guild: discord.Guild):
 async def apply_mute_action(user: discord.Member, mute_role: discord.Role, action: Literal['add', 'remove']):
     try:
         if action == 'remove':
+            if mute_role not in user.roles:
+                raise ValueError('Пользователь не в муте.')
             await user.remove_roles(mute_role)
         elif action == 'add':
+            if mute_role in user.roles:
+                raise ValueError('Пользователь уже в муте.')
             await user.add_roles(mute_role)
     except discord.Forbidden:
         raise ValueError('У меня нет прав.')
