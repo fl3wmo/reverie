@@ -211,11 +211,12 @@ class MutesCog(commands.GroupCog, name='mute'):
 
 def mute_restrictions(mute_type: str) -> dict:
     permissions = {"connect": False, "send_messages": False}
-
     if mute_type == 'text':
-        permissions.pop('connect')
+        del permissions['connect']
     elif mute_type == 'voice':
-        permissions.pop('send_messages')
+        del permissions['send_messages']
+    elif mute_type == 'full':
+        permissions["view_channel"] = False
     return permissions
 
 
@@ -243,6 +244,8 @@ async def create_roles(guild: discord.Guild):
                 channel_overwrite = dict(permissions)
                 for action in [a for a in unable_actions(channel) if a in channel_overwrite]:
                     channel_overwrite.pop(action)
+                if 'правила' in channel.name:
+                    channel_overwrite['view_channel'] = True
                 if channel_overwrite:
                     await channel.set_permissions(mute_role, overwrite=discord.PermissionOverwrite(**channel_overwrite))
             except Exception as e:
