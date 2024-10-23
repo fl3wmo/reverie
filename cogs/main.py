@@ -10,7 +10,11 @@ class MainCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f'Logged in as {self.bot.user.name}')
-        await self.bot.tree.sync()
+        
+        info = await self.bot.tree.sync()
+        for command in info:
+            if command.guild_id is None:
+                self.bot.command_ids[command.name] = command.id
 
 
 async def setup(bot: commands.Bot):
