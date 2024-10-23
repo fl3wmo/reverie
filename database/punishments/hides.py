@@ -52,6 +52,7 @@ class Hides:
             user=user, guild=guild, action_type='hide_give', moderator=moderator,
             auto_review=True, counting=False
         )
+        await self._collection.insert_one({'user': user, 'guild': guild, 'moderator': moderator})
 
         return action
 
