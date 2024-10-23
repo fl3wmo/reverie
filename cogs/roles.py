@@ -66,6 +66,10 @@ class RolesCog(commands.Cog):
         embed = templates.role_requested(nickname, organization, f'[{rang}] {requested_role.rang_name(rang)}')
         await interaction.response.send_message(embed=embed, view=UnderReviewIndicator())
 
+        command_id = interaction.command.guild_ids.get(interaction.guild.id, interaction.command.guild_ids.get(0, None))
+        if command_id:
+            await self.update_message(interaction.channel, command_id)
+
         for role in role_info.values():
             if role.find(interaction.user.roles):
                 await role.remove(interaction.user)
@@ -83,6 +87,13 @@ class RolesCog(commands.Cog):
         if photo_additional:
             files.append(await photo_additional.to_file())
         await self.moderator_channel(interaction.guild).send(content=templates.embed_mentions(embed), embed=embed, view=request.to_view(), files=files)
+
+    async def update_message(self, channel: discord.TextChannel, command_id: int) -> discord.Message:
+        """Обновление сообщения в канале заявок на роли."""
+        async for message in channel.history(limit=5):
+            if message.author.id == self.bot.user.id and not message.embeds:
+                await message.delete()
+                return await message.channel.send(templates.role_requests(command_id))
 
     @app_commands.command(name='role', description='Подать заявление на роль')
     @app_commands.rename(nickname='никнейм', organization='организация', rang='ранг', photo_proof='скриншот-статистики',
