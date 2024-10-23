@@ -3,8 +3,7 @@ import aiosqlite
 import discord
 
 import templates
-from database.online.features import get_dict_of_time_intervals, mashup_info
-from features import seconds_to_time
+from database.online.features import get_dict_of_time_intervals, mashup_info, seconds_to_time
 
 
 class CurrentInfo:

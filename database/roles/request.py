@@ -7,7 +7,6 @@ import discord
 import buttons
 import templates
 from database.actions.action import Act
-from features import seconds_to_time
 from info.roles import RoleInfo, role_info
 
 
@@ -77,7 +76,7 @@ class RoleRequest:
             embed.add_field(
                 name='Модератор',
                 value=templates.user(self.moderator) +
-                      (f' (проверил за {seconds_to_time(round((self.checked_at - self.taken_at).total_seconds()))})' if self.checked_at and self.taken_at else '')
+                      (f' (проверил за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if self.checked_at and self.taken_at else '')
             )
         if self.reviewer:
             embed.add_field(name='Следящий', value=templates.user(self.reviewer))
