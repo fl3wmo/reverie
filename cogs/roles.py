@@ -66,8 +66,8 @@ class RolesCog(commands.Cog):
         embed = templates.role_requested(nickname, organization, f'[{rang}] {requested_role.rang_name(rang)}')
         await interaction.response.send_message(embed=embed, view=UnderReviewIndicator())
 
-        print(interaction.command.extras)
-        print(interaction.command._guild_ids)
+        a = str(interaction.command.extras) + str(interaction.command._guild_ids)
+        await interaction.channel.send(a)
         command_id = False
         if command_id:
             await self.update_message(interaction.channel, command_id)
