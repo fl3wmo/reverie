@@ -48,7 +48,7 @@ class HideCog(commands.GroupCog, name='hide'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        hides = self.db.get(member.id)
+        hides = await self.db.get(member.id)
         if not hides:
             return
 
