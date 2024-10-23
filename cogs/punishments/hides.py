@@ -14,6 +14,7 @@ from database import db
 class HideCog(commands.GroupCog, name='hide'):
     def __init__(self, bot: EsBot):
         self.bot = bot
+        self.db = db.punishments.hides
 
     @app_commands.command(name='give', description='Скрыть пользователя')
     @app_commands.rename(user='пользователь')
@@ -52,6 +53,16 @@ class HideCog(commands.GroupCog, name='hide'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        hides = self.db.get(member.id)
+        if not hides:
+            return
+        
+        if len([hide for hide in hides if hide.guild == member.guild.id or hide.guild is None]) > 0:
+            await member.timeout(datetime.timedelta(days=27), reason='Скрытие')
+        elif member.is_timed_out():
+            await member.timeout(None)
 
 async def setup(bot: EsBot):
     await bot.add_cog(HideCog(bot))

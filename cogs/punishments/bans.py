@@ -25,6 +25,12 @@ class BansCog(commands.Cog, name='ban'):
     async def on_approve(self, action_id: int) -> None:
         action = await db.actions.get(action_id)
         ban = await self.db.apply(action)
+        await db.punishments.hides.remove(
+            user=ban.user,
+            guild=ban.guild if ban.type == 'local' else None,
+            moderator=action.moderator
+        )
+
         guilds = [self.bot.get_guild(ban.guild)] if ban.type == 'local' else self.bot.guilds
         for guild in guilds:
             try:

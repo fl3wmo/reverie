@@ -6,6 +6,7 @@ from fuzzywuzzy import process
 from motor.motor_asyncio import AsyncIOMotorClient as MotorClient
 
 from database.punishments.bans import Bans
+from database.punishments.hides import Hides
 from database.punishments.warns import Warns
 
 if typing.TYPE_CHECKING:
@@ -20,6 +21,7 @@ class Punishments:
         self.mutes = Mutes(self._db['mutes'], actions)
         self.bans = Bans(self._db['bans'], actions)
         self.warns = Warns(self._db['warns'], actions)
+        self.hides = Hides(self._db['hides'], actions)
         
         self.reasons = {
             'Использование команд, не предназначенных для игроков',
