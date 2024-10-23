@@ -24,14 +24,11 @@ class HideCog(commands.GroupCog, name='hide'):
     @security.restricted(security.PermissionLevel.MD)
     async def hide_give(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
-
         if not member:
             raise ValueError('Пользователь не найден')
+        
         await member.timeout(datetime.timedelta(days=27), reason=f'Скрытие от модератора {interaction.user.id}')
-        act = await db.actions.record(
-            user=user.id, guild=interaction.guild.id, action_type='hide_give', moderator=interaction.user.id,
-            auto_review=True, counting=False
-        )
+        act = await self.db.give(user=user.id, guild=interaction.guild.id, moderator=interaction.user.id)
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
@@ -41,15 +38,11 @@ class HideCog(commands.GroupCog, name='hide'):
     @security.restricted(security.PermissionLevel.MD)
     async def hide_remove(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
-
         if not member:
             raise ValueError('Пользователь не найден')
 
         await member.timeout(None)
-        act = await db.actions.record(
-            user=user.id, guild=interaction.guild.id, moderator=interaction.user.id,
-            action_type='hide_remove', counting=False, auto_review=True
-        )
+        act = await self.db.remove(user=user.id, guild=interaction.guild.id, moderator=interaction.user.id)
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
