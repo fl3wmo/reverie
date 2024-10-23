@@ -66,7 +66,11 @@ class RolesCog(commands.Cog):
         embed = templates.role_requested(nickname, organization, f'[{rang}] {requested_role.rang_name(rang)}')
         await interaction.response.send_message(embed=embed, view=UnderReviewIndicator())
 
-        a = str(interaction.command.extras) + str(interaction.command._guild_ids)
+        self.bot.tree.get_command('role')
+        role = self.bot.tree.get_command('role')
+        a = ''
+        for i in dir(role):
+            a += i + '\n'
         await interaction.channel.send(a)
         command_id = False
         if command_id:
