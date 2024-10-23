@@ -49,8 +49,6 @@ class HideCog(commands.GroupCog, name='hide'):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         hides = await self.db.get(member.id)
-        if not hides:
-            return
 
         if len([hide for hide in hides if hide.guild == member.guild.id or hide.guild is None]) > 0:
             if not member.is_timed_out():
