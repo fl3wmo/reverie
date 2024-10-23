@@ -60,7 +60,7 @@ class RoleRequest:
         embed = discord.Embed(
             title=f'{title_prefix} заявление на роль {title_postfix}',
             color=discord.Color.green() if self.status == RequestStatus.APPROVED else discord.Color.red() if self.status == RequestStatus.REJECTED else discord.Color.orange(),
-            timestamp=self.sent_at
+            timestamp=self.sent_at.replace(tzinfo=datetime.timezone.utc)
         )
 
         if not for_moderator:
