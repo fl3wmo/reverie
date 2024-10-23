@@ -52,7 +52,7 @@ def time(seconds: float | None, precise: bool = False) -> str:
         return 'Навсегда'
 
     if seconds < 60:
-        return f'{seconds:.0f} сек.' if not precise else f'{seconds:.2f} сек.'
+        return f'{seconds:.0f} сек.'
     elif seconds < 3600:
         minutes = seconds // 60
         local_seconds = seconds % 60

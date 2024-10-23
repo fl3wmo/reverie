@@ -75,14 +75,13 @@ class RoleRequest:
         if self.moderator:
             embed.add_field(
                 name='Модератор',
-                value=templates.user(self.moderator) +
-                      (f' (проверил за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if self.checked_at and self.taken_at else '')
+                value=templates.user(self.moderator)
             )
         if self.reviewer:
             embed.add_field(name='Следящий', value=templates.user(self.reviewer))
         if self.reason and (self.status == RequestStatus.REJECTED or for_moderator):
             embed.add_field(name='Причина отказа', value=self.reason, inline=False)
-        embed.set_footer(text=f'Заявление на роль №{self.id}')
+        embed.set_footer(text=f'Заявление на роль №{self.id}' + (f' (проверено за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if self.checked_at and self.taken_at else ''))
 
         return embed
 
