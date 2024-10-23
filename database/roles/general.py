@@ -42,7 +42,7 @@ class Roles:
         return req
 
     async def take_request(self, request_id: int, moderator: int) -> None:
-        await self._col.update_one({'id': request_id}, {'$set': {'moderator': moderator}})
+        await self._col.update_one({'id': request_id}, {'$set': {'moderator': moderator, 'taken_at': datetime.datetime.now(datetime.timezone.utc)}})
 
     async def check_request(self, moderator: int, request_id: int, approve: bool, reason: str = None) -> None:
         if moderator != (await self.get_request_by_id(request_id)).moderator:
