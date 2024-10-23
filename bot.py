@@ -14,6 +14,7 @@ from templates import on_tree_error
 class EsBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.command_ids = {}
 
     async def setup_hook(self) -> None:
         self.tree.error(on_tree_error)
