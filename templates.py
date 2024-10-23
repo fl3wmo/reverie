@@ -155,7 +155,7 @@ def role_requested(nickname, role, rang):
     return embed
 
 def role_requests(command_id):
-    return f'## Для подачи заявления на роль, нажмите на </role:{command_id}>'
+    return f'## Используйте **</role:{command_id}>** для подачи заявления на роль.'
 
 def role(role):
     return f'<&{role}>'
