@@ -154,5 +154,8 @@ def role_requested(nickname, role, rang):
     embed.set_footer(text='Время отправки заявления')
     return embed
 
+def role_requests(command_id):
+    return f'## Для подачи заявления на роль, нажмите на </role:{command_id}>'
+
 def role(role):
     return f'<&{role}>'
