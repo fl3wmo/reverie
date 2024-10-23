@@ -153,11 +153,3 @@ class Pagination(discord.ui.View):
 
 def find_channel_by_name(guild: discord.Guild, name: str) -> discord.TextChannel:
     return [c for c in guild.text_channels if name in c.name][0]
-
-
-def seconds_to_time(seconds: int) -> str:
-    seconds = round(seconds)
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = (seconds % 60)
-    return f"{hours}:{minutes:02d}:{seconds:02d}"

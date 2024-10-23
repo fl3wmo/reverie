@@ -47,19 +47,26 @@ def user(obj: discord.Member | discord.User | int) -> str:
     return result
 
 
-def time(seconds: float | None) -> str:
+def time(seconds: float | None, precise: bool = False) -> str:
     if seconds is None:
         return 'Навсегда'
-    
+
     if seconds < 60:
-        return f'{seconds} сек.'
+        return f'{seconds:.0f} сек.' if not precise else f'{seconds:.2f} сек.'
     elif seconds < 3600:
-        return f'{seconds // 60} мин.'
+        minutes = seconds // 60
+        local_seconds = seconds % 60
+        return f'{minutes:.0f} мин.' if not precise else f'{minutes:.0f} мин. {local_seconds:.0f} сек.'
     elif seconds < 86400:
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
-        return f"{hours} ч." + (f' {minutes} мин.' if minutes else '')
-    return f"{seconds // 86400} дн."
+        local_seconds = seconds % 60
+        if precise:
+            return f"{hours:.0f} ч. {minutes:.0f} мин. {local_seconds:.0f} сек."
+        else:
+            return f"{hours:.0f} ч." + (f' {minutes:.0f} мин.' if minutes else '')
+    else:
+        return f"{seconds // 86400:.0f} дн."
 
 
 def date(obj: datetime.datetime, *, date_format: str = 'f') -> str:
