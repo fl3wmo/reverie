@@ -37,13 +37,15 @@ def action(action_type: str, *, short: bool = False) -> str:
     return ' '.join(result).capitalize()
 
 
-def user(obj: discord.Member | discord.User | int) -> str:
+def user(obj: discord.Member | discord.User | int, dm: bool = False) -> str:
     if isinstance(obj, int):
         return f'<@{obj}>'
     
     result = obj.mention
     if tag := security.user_tag(obj):
-        result += f' ({tag})'
+        result += f' [{tag}]'
+        if dm:
+            result += ' ' + obj.display_name.split(']', maxsplit=1)[-1].strip()
     return result
 
 
