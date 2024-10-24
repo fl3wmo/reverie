@@ -52,6 +52,13 @@ def user_level(user: discord.Member | discord.User) -> int:
 def user_tag(user: discord.Member | discord.User) -> str:
     return _moderator_info(user)[1][0]
 
+def reviewers(guild: discord.Guild) -> list[discord.Role]:
+    roles = []
+    for role in guild.roles:
+        for level, moderator_role in _moderator_levels.items():
+            if level in [PermissionLevel.GMD, PermissionLevel.DS] and moderator_role[1] in role.name:
+                roles.append(role)
+    return roles
 
 def restricted(level: PermissionLevel):
     def wrapper(func):
