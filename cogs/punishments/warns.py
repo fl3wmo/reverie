@@ -46,7 +46,7 @@ class WarnsCog(commands.GroupCog, name='warn'):
     @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
     @security.restricted(security.PermissionLevel.MD)
     async def warn_give(self, interaction: discord.Interaction, user: str,
-                        reason: app_commands.Range[str, 1, 50]):
+                        reason: app_commands.Range[str, 1, 512]):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.SMD
