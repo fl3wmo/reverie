@@ -87,11 +87,11 @@ class Act:
             embed.description = templates.user_notify_description(self, **objects)
             embed.set_author(name='Уведомление из: ' + objects['moderator'].guild.name, icon_url=objects['moderator'].guild.icon.url)
 
-        embed.add_field(name='Модератор', value=templates.user(objects.get('moderator', self.moderator)))
+        embed.add_field(name='Модератор', value=templates.user(objects.get('moderator', self.moderator), dm=not for_moderator))
         embed.set_footer(text=f'Акт №{self.id}')
 
         if self.reviewer and self.reviewer != self.moderator:
-            embed.add_field(name='Проверяющий', value=templates.user(objects.get('reviewer', self.reviewer)))
+            embed.add_field(name='Проверяющий', value=templates.user(objects.get('reviewer', self.reviewer), dm=not for_moderator))
 
         if self.duration:
             embed.add_field(name='Длительность', value=templates.time(self.duration))
