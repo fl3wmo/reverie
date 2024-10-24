@@ -34,6 +34,9 @@ class Ban:
         return self._id
 
     async def wait(self, callback):
+        if self.duration is None:
+            return
+        
         start_aware = self.start.replace(tzinfo=datetime.timezone.utc)
         end = start_aware + datetime.timedelta(seconds=self.duration)
         now = datetime.datetime.now(datetime.timezone.utc)

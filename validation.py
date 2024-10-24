@@ -37,7 +37,10 @@ def duration_formatter(default_unit: str = 'м'):
         @functools.wraps(func)
         async def wrapper(self, interaction, user, duration, reason, *args, **kwargs):
             try:
-                duration_in_seconds = parse_duration(duration, default_unit)
+                if duration.strip() == '-1' and default_unit == 'д':
+                    duration_in_seconds = None
+                else:
+                    duration_in_seconds = parse_duration(duration, default_unit)
             except ValueError as e:
                 await interaction.response.send_message(str(e), ephemeral=True)
                 return
