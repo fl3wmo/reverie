@@ -61,7 +61,7 @@ class BansCog(commands.Cog, name='ban'):
     @validation.duration_formatter(default_unit="д")
     @security.restricted(security.PermissionLevel.CUR)
     async def ban_global(self, interaction: discord.Interaction, user: str, duration: str,
-                        reason: app_commands.Range[str, 1, 50]):
+                        reason: app_commands.Range[str, 1, 512]):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         auto_review = True
@@ -106,7 +106,7 @@ class BansCog(commands.Cog, name='ban'):
     @validation.duration_formatter(default_unit="д")
     @security.restricted(security.PermissionLevel.MD)
     async def ban_local(self, interaction: discord.Interaction, user: str, duration: str,
-                         reason: app_commands.Range[str, 1, 50]):
+                         reason: app_commands.Range[str, 1, 512]):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD

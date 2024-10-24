@@ -76,7 +76,7 @@ class MutesCog(commands.GroupCog, name='mute'):
     @validation.duration_formatter()
     @security.restricted(security.PermissionLevel.MD)
     async def mute_text(self, interaction: discord.Interaction, user: str, duration: str,
-                        reason: app_commands.Range[str, 1, 50]):
+                        reason: app_commands.Range[str, 1, 512]):
         await self.mute_text_give(interaction, user, duration, reason)
 
     async def mute_text_screen(self, interaction: discord.Interaction, message: discord.Message):
@@ -112,7 +112,7 @@ class MutesCog(commands.GroupCog, name='mute'):
     @security.restricted(security.PermissionLevel.MD)
     async def mute_voice(
             self, interaction: discord.Interaction, user: str,
-            duration: str, reason: app_commands.Range[str, 1, 50]
+            duration: str, reason: app_commands.Range[str, 1, 512]
     ):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
@@ -155,7 +155,7 @@ class MutesCog(commands.GroupCog, name='mute'):
     @security.restricted(security.PermissionLevel.MD)
     async def mute_full(
             self, interaction: discord.Interaction, user: str,
-            duration: str, reason: app_commands.Range[str, 1, 50]
+            duration: str, reason: app_commands.Range[str, 1, 512]
     ):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
