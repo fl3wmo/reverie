@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from bot import EsBot
 from buttons.online import online_reload
+from autocompletes import date
 from database import db
 from database.online.features import is_counting, is_date_valid
 from database.online.general import CurrentInfo
@@ -21,21 +22,6 @@ class AbstractUser:
     def __init__(self, _id: int, guild: discord.Guild) -> None:
         self.id = _id
         self.guild = guild
-        
-async def date_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
-    dates = [datetime.datetime.now() - datetime.timedelta(days=i) for i in range(7)]
-    if current.strip():
-        found_dates = [date for date in dates if current in date.strftime('%d.%m.%Y')]
-        dates = found_dates or dates
-
-    def description(date: datetime.datetime) -> str:
-        if date.date() == datetime.datetime.now().date():
-            return ' (Сегодня)'
-        if date.date() == (datetime.datetime.now() - datetime.timedelta(days=1)).date():
-            return ' (Вчера)'
-        return ''
-
-    return [app_commands.Choice(name=date.strftime('%d.%m.%Y') + description(date), value=date.strftime('%d.%m.%Y')) for date in dates]
 
 
 class OnlineCog(commands.Cog):
@@ -50,7 +36,7 @@ class OnlineCog(commands.Cog):
         date='Дата в формате dd.mm.YYYY',
         is_open='Подсчитывать онлайн только в открытых каналах.'
     )
-    @app_commands.autocomplete(date=date_autocomplete)
+    @app_commands.autocomplete(date=date)
     async def online(self, interaction: discord.Interaction,
                      user: discord.Member,
                      date: str,

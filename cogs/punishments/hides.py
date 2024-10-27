@@ -11,12 +11,12 @@ from database import db
 
 
 @app_commands.default_permissions(manage_nicknames=True)
-class HideCog(commands.GroupCog, name='hide'):
+class HideCog(commands.Cog, name='hide'):
     def __init__(self, bot: EsBot):
         self.bot = bot
         self.db = db.punishments.hides
 
-    @app_commands.command(name='give', description='Скрыть пользователя')
+    @app_commands.command(name='hide', description='Скрыть пользователя')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(
         user='Пользователь, которого нужно скрыть',
@@ -32,7 +32,7 @@ class HideCog(commands.GroupCog, name='hide'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @app_commands.command(name='remove', description='Убрать скрытие с пользователя')
+    @app_commands.command(name='unhide', description='Убрать скрытие с пользователя')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно убрать скрытие')
     @security.restricted(security.PermissionLevel.MD)

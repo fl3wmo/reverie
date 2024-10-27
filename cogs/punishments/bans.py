@@ -19,9 +19,6 @@ class BansCog(commands.Cog, name='ban'):
         self.bot = bot
         self.db: Bans = db.punishments.bans
 
-    global_group = app_commands.Group(name='ban-global', description='Глобальные баны', default_permissions=discord.Permissions(administrator=True), guild_only=True)
-    local_group = app_commands.Group(name='ban', description='Баны на одном сервере', default_permissions=discord.Permissions(manage_nicknames=True), guild_only=True)
-
     async def on_approve(self, action_id: int) -> None:
         action = await db.actions.get(action_id)
         ban = await self.db.apply(action)
@@ -50,7 +47,8 @@ class BansCog(commands.Cog, name='ban'):
         await self.on_approve(ban_act.id)
         await templates.link_action(interaction, ban_act, moderator=interaction.user, user=user)
 
-    @global_group.command(name='give', description='Заблокировать пользователя на всех серверах')
+    @app_commands.command(name='gban', description='Заблокировать пользователя на всех серверах')
+    @app_commands.default_permissions(administrator=True)
     @app_commands.rename(user='пользователь', duration='длительность', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно заблокировать',
@@ -75,9 +73,8 @@ class BansCog(commands.Cog, name='ban'):
         if auto_review:
             await self.on_approve(act.id)
 
-
-
-    @global_group.command(name='remove', description='Снять блокировку с пользователя на всех серверах')
+    @app_commands.command(name='ungban', description='Снять блокировку с пользователя на всех серверах')
+    @app_commands.default_permissions(administrator=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять блокировку')
     @security.restricted(security.PermissionLevel.CUR)
@@ -94,8 +91,8 @@ class BansCog(commands.Cog, name='ban'):
         
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-
-    @local_group.command(name='give', description='Заблокировать пользователя на этом сервере')
+    @app_commands.command(name='ban', description='Заблокировать пользователя на этом сервере')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь', duration='длительность', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно заблокировать',
@@ -120,9 +117,8 @@ class BansCog(commands.Cog, name='ban'):
         if auto_review:
             await self.on_approve(act.id)
 
-
-
-    @local_group.command(name='remove', description='Снять блокировку с пользователя на этом сервере')
+    @app_commands.command(name='unban', description='Снять блокировку с пользователя на этом сервере')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять блокировку')
     @security.restricted(security.PermissionLevel.GMD)
@@ -135,7 +131,6 @@ class BansCog(commands.Cog, name='ban'):
                                    ban_type='local')
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
-
 
     @commands.Cog.listener()
     async def on_connect(self):

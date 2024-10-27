@@ -20,6 +20,17 @@ class Actions:
     async def by_user(self, user: int, *, counting: bool = False) -> list[Act]:
         return [Act(**doc) async for doc in self._collection.find({'user': user} if not counting else {'user': user, 'counting': True})]
 
+    async def by_moderator(self, moderator: int, *, counting: bool = False, guild: int = None, date: datetime.datetime = None) -> list[Act]:
+        query = {'moderator': moderator}
+        if guild:
+            query['guild'] = guild
+        if date:
+            date = date.replace(hour=3, minute=0, second=0, microsecond=0)
+            query['at'] = {'$gte': date, '$lt': date + datetime.timedelta(days=1)}
+        if counting:
+            query['counting'] = True
+        return [Act(**doc) async for doc in self._collection.find(query)]
+
     async def record(
             self, user: int, guild: int,
             moderator: int, action_type: action, *,
