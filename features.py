@@ -3,6 +3,8 @@ import typing
 
 import discord
 
+import templates
+
 if typing.TYPE_CHECKING:
     from database import Database
 
@@ -108,7 +110,7 @@ class Pagination(discord.ui.View):
     async def send_initial_message(self):
         """Send the initial paginated message with view."""
         embed = self._create_embed(self.current_page)
-        await self.interaction.response.send_message(embed=embed, view=self, ephemeral=True)
+        await self.interaction.response.send_message(templates.embed_mentions(embed), embed=embed, view=self, ephemeral=True)
 
     def _create_embed(self, page_number):
         """Create an embed for the given page number."""
@@ -123,7 +125,7 @@ class Pagination(discord.ui.View):
         """Update the message with the current page's embed and the pagination view."""
         embed = self._create_embed(self.current_page)
         self._update_buttons()
-        await self.interaction.edit_original_response(embed=embed, view=self)
+        await self.interaction.edit_original_response(content=templates.embed_mentions(embed), embed=embed, view=self)
 
     def _update_buttons(self):
         """Update button states based on the current page."""

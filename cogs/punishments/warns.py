@@ -11,7 +11,7 @@ from database.punishments.warns import Warns
 
 
 @app_commands.default_permissions(manage_nicknames=True)
-class WarnsCog(commands.GroupCog, name='warn'):
+class WarnsCog(commands.Cog, name='warn'):
     def __init__(self, bot: EsBot):
         self.bot = bot
         self.db: Warns = db.punishments.warns
@@ -37,7 +37,8 @@ class WarnsCog(commands.GroupCog, name='warn'):
         action = await db.actions.get(action_id)
         await self.db.apply_remove(action)
 
-    @app_commands.command(name='give', description='Предупредить пользователя')
+    @app_commands.command(name='warn', description='Предупредить пользователя')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно заблокировать',
@@ -60,8 +61,8 @@ class WarnsCog(commands.GroupCog, name='warn'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-
-    @app_commands.command(name='remove', description='Снять предупреждение с пользователя')
+    @app_commands.command(name='unwarn', description='Снять предупреждение с пользователя')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять предупреждение')
     @security.restricted(security.PermissionLevel.MD)

@@ -39,11 +39,15 @@ class DateInfo:
             ))
 
     @property
+    def total_seconds(self):
+        return self._total
+
+    @property
     def total_time(self):
         return seconds_to_time(self._total)
 
     def __str__(self):
-        return '\n'.join([f'{index}. {channel.channel_name}: {seconds_to_time(channel.seconds)}' for index, channel in enumerate(self.channels, 1)])
+        return '\n'.join([f'{index}. {channel.channel_name}: {seconds_to_time(channel.seconds)}' for index, channel in enumerate(sorted(self.channels, key=lambda c: c.seconds, reverse=True), 1)])
 
     def to_embed(self, user, is_open, date):
         embed = ((discord.Embed(title=f'⏱️ Онлайн за {date}', timestamp=discord.utils.utcnow(),
@@ -51,13 +55,15 @@ class DateInfo:
                  .add_field(name="Пользователь", value=templates.user(user), inline=False)
                  .add_field(name='Общее время', value=self.total_time)
                  .add_field(name='Каналы', value='Открытые' if is_open else 'Все')
-                 .set_thumbnail(
-            url='https://media.discordapp.net/attachments/1297683161655808010/1297988365836091476/Frame_5_3.png?ex=6717ed5d&is=67169bdd&hm=c62248f29d331512040eb324640f2e00a4c5b1b94f48adf1d3ababe89b33b72d&=&format=webp&quality=lossless&width=656&height=656')
+                 .set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
                  .set_footer(text='Информация обновлена'))
 
         if self.channels:
             embed.add_field(name='Время в каналах', value=str(self), inline=False)
         return embed
+
+    def to_field(self):
+        return {'name': "Время в каналах", 'value': str(self), 'inline': False}
 
 class OnlineDatabase:
     def __init__(self, db_path):

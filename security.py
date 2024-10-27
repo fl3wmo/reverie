@@ -48,9 +48,11 @@ def user_permissions_compare(user1: discord.Member, user2: discord.Member | disc
 def user_level(user: discord.Member | discord.User) -> int:
     return _moderator_info(user)[0]
 
-
 def user_tag(user: discord.Member | discord.User) -> str:
     return _moderator_info(user)[1][0]
+
+def user_role(user: discord.Member | discord.User) -> str:
+    return _moderator_info(user)[1][1]
 
 def reviewers(guild: discord.Guild) -> list[discord.Role]:
     roles = []

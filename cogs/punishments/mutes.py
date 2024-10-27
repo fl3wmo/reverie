@@ -29,7 +29,7 @@ class MutesModal(discord.ui.Modal, title='Выдача текстового му
 
 
 @app_commands.default_permissions(manage_nicknames=True)
-class MutesCog(commands.GroupCog, name='mute'):
+class MutesCog(commands.Cog, name='mute'):
     def __init__(self, bot: EsBot):
         self.bot = bot
         self.db = db.punishments.mutes
@@ -38,9 +38,8 @@ class MutesCog(commands.GroupCog, name='mute'):
         )
         self.bot.tree.add_command(self.ctx_menu)
 
-    text = app_commands.Group(name='text', description='Муты в текстовых каналах', guild_only=True)
-    voice = app_commands.Group(name='voice', description='Муты в голосовых каналах', guild_only=True)
-    full = app_commands.Group(name='full', description='Полный мут', guild_only=True)
+    mute = app_commands.Group(name='mute', description='Выдать мут', default_permissions=discord.Permissions(manage_nicknames=True))
+    unmute = app_commands.Group(name='unmute', description='Снять мут', default_permissions=discord.Permissions(manage_nicknames=True))
 
     async def mute_text_give(self, interaction: discord.Interaction, user: str | discord.Member | discord.User, duration: str, reason: str, *, screenshot: tuple[discord.Message, int] | None = None):
         if isinstance(user, str):
@@ -65,7 +64,8 @@ class MutesCog(commands.GroupCog, name='mute'):
             screenshot = (None, 0)
         await templates.link_action(interaction, act, full_screenshot, screenshot[0], db, user=user, moderator=interaction.user)
 
-    @text.command(name='give', description='Замутить пользователя в текстовых каналах')
+    @mute.command(name='text', description='Замутить пользователя в текстовых каналах')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь', duration='длительность', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно замутить',
@@ -87,7 +87,7 @@ class MutesCog(commands.GroupCog, name='mute'):
             await self.mute_text_give(modal_interaction, message.author, duration, reason, screenshot=(message, message_amount))
         await interaction.response.send_modal(MutesModal(mute_callback))
 
-    @text.command(name='remove', description='Снять мут с пользователя в текстовых каналах')
+    @unmute.command(name='text', description='Снять мут с пользователя в текстовых каналах')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять мут')
     @security.restricted(security.PermissionLevel.MD)
@@ -100,7 +100,8 @@ class MutesCog(commands.GroupCog, name='mute'):
         
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @voice.command(name='give', description='Замутить пользователя в голосовых каналах')
+    @mute.command(name='voice', description='Замутить пользователя в голосовых каналах')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь', duration='длительность', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно замутить',
@@ -126,7 +127,8 @@ class MutesCog(commands.GroupCog, name='mute'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @voice.command(name='remove', description='Снять мут с пользователя в голосовых каналах')
+    @unmute.command(name='voice', description='Снять мут с пользователя в голосовых каналах')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять мут')
     @security.restricted(security.PermissionLevel.MD)
@@ -143,7 +145,8 @@ class MutesCog(commands.GroupCog, name='mute'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @full.command(name='give', description='Полный мут пользователя (в текстовых и голосовых каналах)')
+    @mute.command(name='full', description='Полный мут пользователя (в текстовых и голосовых каналах)')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь', duration='длительность', reason='причина')
     @app_commands.describe(
         user='Пользователь, которого нужно замутить',
@@ -169,7 +172,8 @@ class MutesCog(commands.GroupCog, name='mute'):
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
-    @full.command(name='remove', description='Снять полный мут с пользователя')
+    @unmute.command(name='full', description='Снять полный мут с пользователя')
+    @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять полный мут')
     @security.restricted(security.PermissionLevel.MD)
