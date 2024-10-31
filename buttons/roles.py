@@ -43,7 +43,10 @@ class RoleRequestHandler:
 
     async def edit_interaction_message(self, interaction: discord.Interaction, request, specified_view: discord.ui.View = None) -> None:
         embed = request.to_embed()
-        await interaction.response.edit_message(content=templates.embed_mentions(embed), embed=embed, view=specified_view or request.to_view())
+        if not interaction.response.is_done():
+            await interaction.response.edit_message(content=templates.embed_mentions(embed), embed=embed, view=specified_view or request.to_view())
+        else:
+            await interaction.message.edit(content=templates.embed_mentions(embed), embed=embed, view=specified_view or request.to_view())
 
 class TakeRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:take:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
@@ -157,6 +160,19 @@ class ReviewApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='rol
 
         await self.handler.edit_interaction_message(interaction, request, view)
 
+class ReasonChange(discord.ui.Modal):
+    reason = discord.ui.TextInput(label='Причина')
+
+    def __init__(self, reason, callback):
+        self.default_reason = reason
+        self.reason.default = reason
+        self.callback = callback
+        super().__init__(title='Изменение причины отказа')
+
+    async def on_submit(self, interaction: Interaction[ClientT], /) -> None:
+        await interaction.response.defer()
+        await self.callback(interaction, self.reason.value)
+
 class ReviewPartialApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:review_partial_approve:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
         super().__init__(
@@ -176,14 +192,15 @@ class ReviewPartialApproveRole(discord.ui.DynamicItem[discord.ui.Button], templa
 
     @security.restricted(security.PermissionLevel.GMD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
-        await db.roles.review_request(interaction.user.id, self.handler.action_id, True, partial=True)
-        request = await db.roles.get_request_by_id(self.handler.action_id)
+        async def change_reason(modal_interaction: Interaction[ClientT], reason: str):
+            await db.roles.review_request(interaction.user.id, self.handler.action_id, True, reason=reason, partial=True)
+            request = await db.roles.get_request_by_id(self.handler.action_id)
 
-        view = discord.ui.View()
-        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='🤷‍♂️',
-                                        style=discord.ButtonStyle.blurple, disabled=True))
+            view = discord.ui.View()
+            view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='🤷‍♂️', style=discord.ButtonStyle.blurple, disabled=True))
 
-        await self.handler.edit_interaction_message(interaction, request, view)
+            await self.handler.edit_interaction_message(interaction, request, view)
+        await interaction.response.send_modal(ReasonChange('', change_reason))
 
 class ReviewRejectRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:review_reject:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
@@ -204,24 +221,26 @@ class ReviewRejectRole(discord.ui.DynamicItem[discord.ui.Button], template='role
 
     @security.restricted(security.PermissionLevel.GMD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
-        await db.roles.review_request(interaction.user.id, self.handler.action_id, False)
-        request = await db.roles.get_request_by_id(self.handler.action_id)
+        async def change_reason(modal_interaction: Interaction[ClientT], reason: str):
+            await db.roles.review_request(interaction.user.id, self.handler.action_id, False, reason=reason)
+            request = await db.roles.get_request_by_id(self.handler.action_id)
 
-        view = discord.ui.View()
-        view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS DOWN SIGN}', style=discord.ButtonStyle.danger, disabled=True))
+            view = discord.ui.View()
+            view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS DOWN SIGN}', style=discord.ButtonStyle.danger, disabled=True))
 
-        await self.handler.edit_interaction_message(interaction, request, view)
-        await self.handler.update_status_message(interaction, request)
+            await self.handler.edit_interaction_message(interaction, request, view)
+            await self.handler.update_status_message(interaction, request)
 
-        if not await db.roles.is_request_last(request.id, request.user, request.guild):
-            return
+            if not await db.roles.is_request_last(request.id, request.user, request.guild):
+                return
 
-        member, user = await interaction.client.getch_any(interaction.guild, request.user)
-        if member:
-            if request.status == RequestStatus.REJECTED:
-                await request.role_info.remove(member)
-            else:
-                await request.role_info.give(member, request.nickname, request.rang)
+            member, user = await interaction.client.getch_any(interaction.guild, request.user)
+            if member:
+                if request.status == RequestStatus.REJECTED:
+                    await request.role_info.remove(member)
+                else:
+                    await request.role_info.give(member, request.nickname, request.rang)
+        await interaction.response.send_modal(ReasonChange('', change_reason))
 
 
 def roles_take(action_id: int) -> discord.ui.View:

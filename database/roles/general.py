@@ -55,12 +55,23 @@ class Roles:
             }}
         )
 
-    async def review_request(self, reviewer: int, request_id: int, approve: bool, partial: bool = False) -> None:
+    async def review_request(self, reviewer: int, request_id: int, approve: bool, reason: str = None, partial: bool = False) -> None:
         update = {'$set': {'reviewer': reviewer}}
         if not approve:
             request = await self.get_request_by_id(request_id)
             update['$set']['approved'] = not request.approved
+            if not request.approved:
+                update['$set']['review_reason'] = reason
+            else:
+                update['$set']['reason'] = reason
         if partial:
             update['$set']['counting'] = False
+            update['$set']['review_reason'] = reason
         await self._col.update_one({'id': request_id}, update)
-        
+
+    async def moderator_work(self, guild: int, moderator: int, date_from: datetime.datetime, date_to: datetime.datetime = None) -> list[RoleRequest]:
+        date_from = date_from.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
+        if date_to:
+            date_to = date_to.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
+        cursor = self._col.find({'guild': guild, 'moderator': moderator, 'counting': True, 'sent_at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
+        return [RoleRequest(**doc) async for doc in cursor]
