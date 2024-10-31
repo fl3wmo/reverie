@@ -68,5 +68,3 @@ class EsBot(commands.Bot):
             return None, user
         else:
             raise ValueError('Пользователь не найден.')
-
-
