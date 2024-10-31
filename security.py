@@ -62,6 +62,20 @@ def reviewers(guild: discord.Guild) -> list[discord.Role]:
                 roles.append(role)
     return roles
 
+def role_checker(guild: discord.Guild) -> discord.Role:
+    for role in guild.roles:
+        for level, moderator_role in _moderator_levels.items():
+            if level == PermissionLevel.SMD and moderator_role[1] in role.name:
+                return role
+
+def moderation_team(guild: discord.Guild) -> list[discord.Role]:
+    roles = []
+    for role in guild.roles:
+        for level, moderator_role in _moderator_levels.items():
+            if level in [PermissionLevel.MD, PermissionLevel.SMD, PermissionLevel.AD] and moderator_role[1] in role.name:
+                roles.append(role)
+    return roles
+
 def restricted(level: PermissionLevel):
     def wrapper(func):
         @functools.wraps(func)
