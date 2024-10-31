@@ -50,7 +50,7 @@ class DateInfo:
         return '\n'.join([f'{index}. {channel.channel_name}: {seconds_to_time(channel.seconds)}' for index, channel in enumerate(sorted(self.channels, key=lambda c: c.seconds, reverse=True), 1)])
 
     def to_embed(self, user, is_open, date):
-        embed = ((discord.Embed(title=f'⏱️ Онлайн за {date}', timestamp=discord.utils.utcnow(),
+        embed = ((discord.Embed(title=f'⏱️ Онлайн за {datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")}', timestamp=discord.utils.utcnow(),
                                 color=discord.Color.light_embed()))
                  .add_field(name="Пользователь", value=templates.user(user), inline=False)
                  .add_field(name='Общее время', value=self.total_time)
@@ -160,6 +160,39 @@ class OnlineDatabase:
             }, date)
         return DateInfo(all_online)
 
+    async def get_diapason_info(self, user_id: int, guild_id: int, date_from: datetime.datetime, date_to: datetime.datetime, is_open: bool) -> dict[str, DateInfo]:
+        query = "SELECT * FROM all_online WHERE user_id = ? AND guild_id = ? AND date BETWEEN ? AND ?"
+        params = [user_id, guild_id, date_from.strftime('%Y-%m-%d'), date_to.strftime('%Y-%m-%d')]
+        if is_open:
+            query += " AND is_counting = ?"
+            params.append(is_open)
+        cursor = await self.db.execute(query, params)
+
+        all_online = [{'user_id': row[0], 'guild_id': row[1], 'channel_id': row[2], 'channel_name': row[3],
+                          'date': row[4], 'seconds': row[5], 'is_counting': row[6]} for row in await cursor.fetchall()]
+        dates = {date: [] for date in set(row['date'] for row in all_online)}
+
+        for row in all_online:
+            dates[row['date']].append(row)
+
+        if date_to > datetime.datetime.now() > date_from:
+            query = "SELECT * FROM current_online WHERE user_id = ? AND guild_id = ?"
+            params = [user_id, guild_id]
+            if is_open:
+                query += " AND is_counting = ?"
+                params.append(is_open)
+            cursor = await self.db.execute(query, params)
+            current_online = await cursor.fetchall()
+
+            for row in current_online:
+                dates[datetime.datetime.now().strftime('%Y-%m-%d')] = mashup_info(dates[datetime.datetime.now().strftime('%Y-%m-%d')], {
+                    'user_id': row[0], 'guild_id': row[1], 'channel_id': row[2],
+                    'channel_name': row[3], 'join_time': row[4], 'is_counting': row[5]
+                }, datetime.datetime.now().strftime('%Y-%m-%d'))
+
+        return {date: DateInfo(all_online) for date, all_online in dates.items()}
+
+
     def __del__(self):
         import asyncio
-        asyncio.run(self.close_db())  # Закрываем соединение при уничтожении объекта
+        asyncio.run(self.close_db())

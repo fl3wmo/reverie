@@ -1,9 +1,11 @@
 import datetime
 
+import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+import templates
 from bot import EsBot
 from buttons.online import online_reload
 from autocompletes import date
@@ -28,6 +30,7 @@ class OnlineCog(commands.Cog):
     def __init__(self, bot: EsBot):
         self.bot = bot
         self.db = db.online
+        self.hassle_data: dict[str, None | dict | datetime.datetime] = {'last_update': None, 'data': None}
 
     @app_commands.command(name='online', description='Показать онлайн пользователя')
     @app_commands.rename(user='пользователь', date='дата', is_open='открытые-каналы')
@@ -46,10 +49,73 @@ class OnlineCog(commands.Cog):
         elif not is_date_valid(date):
             raise ValueError('Неверный формат даты. Формат: dd.mm.YYYY.\nПример: 07.07.2077')
 
+        date = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d')
         if not user:
             user = interaction.user
         info = await self.db.get_info(is_open, user_id=user.id, guild_id=interaction.guild.id, date=date)
         await interaction.response.send_message(embed=info.to_embed(user.id, is_open, date), view=online_reload(user.id, interaction.user.id, interaction.guild.id, is_open, date))
+
+    @app_commands.command(name='week-online', description='Показать онлайн пользователя за неделю')
+    @app_commands.rename(user='пользователь', week='неделя')
+    @app_commands.describe(user='Пользователь, чей онлайн вы хотите проверить', week='Текущая или прошлая неделя')
+    @app_commands.choices(week=[app_commands.Choice(name='Текущая', value='Текущая'), app_commands.Choice(name='Прошлая', value='Прошлая')])
+    async def week_online(self, interaction: discord.Interaction, week: app_commands.Choice[str], user: discord.Member = None):
+        today = datetime.datetime.now()
+        user = user or interaction.user
+        if week.value == 'Текущая':
+            start_date = today - datetime.timedelta(days=today.weekday())
+            end_date = start_date + datetime.timedelta(days=6)
+        elif week.value == 'Прошлая':
+            start_date = today - datetime.timedelta(days=today.weekday() + 7)
+            end_date = start_date + datetime.timedelta(days=6)
+        else:
+            raise ValueError("Invalid week option.")
+
+        online = await self.db.get_diapason_info(user_id=user.id, guild_id=interaction.guild.id, date_from=start_date, date_to=end_date, is_open=True)
+        embed = discord.Embed(title=f'⏱️ Статистика за неделю',
+                                color=discord.Color.light_embed(), timestamp=discord.utils.utcnow())
+        embed.set_footer(text='Информация обновлена')
+        embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
+        total_online = sum(info.total_seconds for info in online.values())
+
+        embed.add_field(name='Пользователь', value=user.mention, inline=False)
+        embed.add_field(name='Неделя', value=f'{week.name}\n-# ({start_date.strftime("%d.%m")} - {end_date.strftime("%d.%m")})', inline=True)
+        embed.add_field(name='Общее время', value=templates.time(total_online), inline=True)
+        embed.add_field(name='По датам', value='\n'.join(f'{datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")}: {templates.time(info.total_seconds)}' for date, info in online.items()) or 'Нет активности.', inline=False)
+
+        channels = {}
+        for info in online.values():
+            for channel in info.channels:
+                if channel.channel_name not in channels:
+                    channels[channel.channel_name] = 0
+                channels[channel.channel_name] += channel.seconds
+
+        embed.add_field(name='По каналам', value='\n'.join(f'{channel}: {templates.time(seconds)}' for channel, seconds in channels.items()) or 'Нет активности.', inline=False)
+        await interaction.response.send_message(content=templates.embed_mentions(embed), embed=embed, ephemeral=True)
+
+    async def update_hassle_data(self):
+        if self.hassle_data['last_update'] and (datetime.datetime.now(datetime.UTC) - self.hassle_data['last_update']).seconds < 60:
+            return
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://launcher.hassle-games.com:3000/online.json') as response:
+                data = await response.json()
+                hassle_data = data.get('crmp_new')
+                if not hassle_data:
+                    raise ValueError('Информация о серверах HASSLE недоступна.')
+                self.hassle_data['data'] = hassle_data
+                self.hassle_data['last_update'] = datetime.datetime.now(datetime.UTC)
+
+    @app_commands.command(name='hassle', description='Показать онлайн на серверах HASSLE')
+    async def hassle(self, interaction: discord.Interaction):
+        await self.update_hassle_data()
+
+        embed = discord.Embed(title='🎮 Онлайн на серверах HASSLE', color=discord.Color.light_embed(), timestamp=self.hassle_data['last_update'])
+        embed.set_footer(text='Информация обновлена')
+        embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
+        for index, online_data in self.hassle_data.get('data').items():
+            embed.add_field(name=f'{index}', value=f'{online_data["players"]}/{online_data["maxPlayers"]}', inline=True)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     async def join(self, member: discord.Member, channel: discord.VoiceChannel) -> None:
         await self.db.add_join_info(member, channel, is_counting(channel))
@@ -64,6 +130,13 @@ class OnlineCog(commands.Cog):
             after: discord.VoiceState
     ) -> None:
         if before.channel == after.channel:
+            if before.self_deaf != after.self_deaf:
+                if after.self_deaf:
+                    await self.leave(member, before.channel)
+                else:
+                    await self.join(member, after.channel)
+            return
+        if after.self_deaf:
             return
 
         if before.channel is None:
@@ -76,11 +149,13 @@ class OnlineCog(commands.Cog):
 
     async def update_member(self, current_info: CurrentInfo, member: discord.Member, channel: discord.VoiceChannel | discord.StageChannel) -> None:
         if not (prev_channel := current_info.in_channel(member.id, channel.guild.id)):
-            await self.join(member, channel)
+            if not member.voice.self_deaf:
+                await self.join(member, channel)
         elif prev_channel != channel.id:
             prev_channel_obj = AbstractChannel(_id=prev_channel[0], name=prev_channel[1])
             await self.leave(member, prev_channel_obj)
-            await self.join(member, channel)
+            if not member.voice.self_deaf:
+                await self.join(member, channel)
 
     async def update_users(self, current_info: CurrentInfo, channel: discord.VoiceChannel | discord.StageChannel) -> None:
         for member in channel.members:
