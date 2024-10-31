@@ -31,7 +31,7 @@ def get_dict_of_time_intervals(start_date, end_date):
             ).total_seconds()
         else:
             seconds_in_date = 24 * 3600
-        result[current_date.strftime('%d.%m.%Y')] = seconds_in_date
+        result[current_date.strftime('%Y-%m-%d')] = seconds_in_date
         current_date += datetime.timedelta(days=1)
     return result
 
@@ -68,7 +68,7 @@ def is_date_valid(date: str):
 
 
 def date_range(start_datetime, end_datetime):
-    date_format = "%d.%m.%Y"
+    date_format = "%Y-%m-%d"
 
     current_datetime = start_datetime
     dates = []
