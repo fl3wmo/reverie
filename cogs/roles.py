@@ -1,7 +1,10 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 from discord import app_commands
 
+import security
 import templates
 import validation
 from bot import EsBot
@@ -84,7 +87,20 @@ class RolesCog(commands.Cog):
         files = [await photo_proof.to_file()]
         if photo_additional:
             files.append(await photo_additional.to_file())
-        await self.moderator_channel(interaction.guild).send(content=templates.embed_mentions(embed), embed=embed, view=request.to_view(), files=files)
+        message = await self.moderator_channel(interaction.guild).send(content=templates.embed_mentions(embed), embed=embed, view=request.to_view(), files=files)
+
+        async def reminder(moderators_message, request_id):
+            old_request = await self.db.get_request_by_id(request_id)
+            if old_request.moderator:
+                return
+            guild = moderators_message.guild
+            await self.moderator_channel(guild).send(
+                f'## Напоминание {security.role_checker(guild).mention}\nЗаявка на роль не рассмотрена в течение 5 минут.\n'
+                f'Пожалуйста, проверьте её.'
+            )
+
+        await asyncio.sleep(300)
+        await reminder(message, request.id)
 
     async def update_message(self, channel: discord.TextChannel, command_id: int) -> discord.Message:
         """Обновление сообщения в канале заявок на роли."""

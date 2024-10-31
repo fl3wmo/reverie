@@ -34,6 +34,7 @@ class RoleRequest:
     checked_at: datetime.datetime = None
     reason: str = None
     reviewer: int = None
+    review_reason: str = None
     _id: str = None
 
     @property
@@ -81,6 +82,8 @@ class RoleRequest:
             embed.add_field(name='Следящий', value=templates.user(self.reviewer))
         if self.reason and (self.status == RequestStatus.REJECTED or for_moderator):
             embed.add_field(name='Причина отказа', value=self.reason, inline=False)
+        if self.review_reason and for_moderator:
+            embed.add_field(name='Причина пересмотра', value=self.review_reason, inline=False)
         embed.set_footer(text=f'Заявление на роль №{self.id}' + (f' (проверено за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if for_moderator and self.checked_at and self.taken_at else ''))
 
         return embed
