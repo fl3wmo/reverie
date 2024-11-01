@@ -69,7 +69,10 @@ class Punishments:
         }
 
     async def reasons_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
-        choices = process.extract(current, self.reasons, limit=25)
+        if current:
+            choices = process.extract(current, self.reasons, limit=25)
+        else:
+            choices = [(reason, 100) for reason in self.reasons]
         return [
             app_commands.Choice(name=reason, value=reason)
             for reason, index in choices
