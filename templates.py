@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+from typing import Tuple
 
 import discord
 from discord import app_commands
@@ -161,3 +162,13 @@ def role_requests(command_id):
 
 def role(role):
     return f'<&{role}>'
+
+
+def format_plural(n: int | float, forms: Tuple[str, str, str]) -> str:
+    if n % 10 == 1 and n % 100 != 11:
+        form = forms[0]
+    elif 2 <= n % 10 <= 4 and (n % 100 < 10 or n % 100 >= 20):
+        form = forms[1]
+    else:
+        form = forms[2]
+    return f'**{n:g}** {form}'

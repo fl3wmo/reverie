@@ -14,10 +14,20 @@ from features import find_channel_by_name
 from info.roles import role_info, RoleInfo
 
 
+def get_organization_roles(member: discord.Member) -> list[RoleInfo]:
+    """Получение ролей организации у пользователя."""
+    return [role for role in role_info.values() if role.find(member.roles)]
+
+
 class RolesCog(commands.Cog):
     def __init__(self, bot: EsBot):
         self.bot = bot
         self.db = db.roles
+        self.ctx_menu = app_commands.ContextMenu(
+            name='снять роль фракции', callback=self.remove_role_context
+        )
+        self.ctx_menu.default_permissions = discord.Permissions(manage_nicknames=True)
+        self.bot.tree.add_command(self.ctx_menu)
 
     async def rang_callback(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[int]]:
         current = 0 if not current.isdecimal() else int(current)
@@ -71,9 +81,9 @@ class RolesCog(commands.Cog):
 
         await self.update_message(interaction.channel, self.bot.command_ids.get('role', 0))
 
-        for role in role_info.values():
-            if role.find(interaction.user.roles):
-                await role.remove(interaction.user)
+        roles = get_organization_roles(interaction.user)
+        for role in roles:
+            await role.remove(interaction.user)
 
         request = await self.db.add_request(
             user=interaction.user.id,
@@ -131,6 +141,38 @@ class RolesCog(commands.Cog):
             await self.handle_existing_role(interaction, requested_role, rang, nickname)
         else:
             await self.handle_new_role_request(interaction, nickname, organization.value, rang, requested_role, photo_proof, photo_additional)
+
+    @app_commands.command(name='role-remove', description='Снять роль фракции')
+    async def remove_role(self, interaction: discord.Interaction):
+        """Команда для снятия роли."""
+        if not (roles := get_organization_roles(interaction.user)):
+            return await interaction.response.send_message('У вас нет роли', ephemeral=True)
+
+        for role in roles:
+            await role.remove(interaction.user)
+
+        await interaction.response.send_message('Роль успешно снята', ephemeral=True)
+
+    async def remove_role_context(self, interaction: discord.Interaction, target: discord.Member):
+        """Контекстное меню для снятия роли."""
+        if security.user_level(interaction.user) < security.PermissionLevel.MD:
+            raise ValueError('У вас нет прав')
+        security.user_permissions_compare(interaction.user, target)
+
+        if not (roles := get_organization_roles(target)):
+            return await interaction.response.send_message('У пользователя нет роли', ephemeral=True)
+
+        role_names = [list(role_info.keys())[list(role_info.values()).index(role)] for role in roles]
+        for role in roles:
+            await role.remove(target)
+        await interaction.response.send_message('Роль успешно снята', ephemeral=True)
+
+        remove = await self.db.remove_roles(target.id, interaction.guild.id, role_names, interaction.user.id)
+        logs_channel = find_channel_by_name(interaction.guild, 'логи-ролей')
+
+        embed = remove.to_embed()
+        await logs_channel.send(templates.embed_mentions(embed), embed=embed)
+        await remove.notify_user(target, interaction.user)
 
 
 async def setup(bot: EsBot):

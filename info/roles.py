@@ -26,7 +26,8 @@ class RoleInfo:
         role = self.find(member.roles)
         if role:
             await member.remove_roles(role)
-        await member.edit(nick=None)
+        if member.nick:
+            await member.edit(nick=None)
 
 role_info = {
     'Правительство': RoleInfo(['・Правительство', '・Пра-во'], 'Пра-во | {}',
