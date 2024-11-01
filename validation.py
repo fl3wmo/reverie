@@ -1,6 +1,8 @@
 import functools
 import re
 
+import security
+
 
 def user_id(user: str) -> int:
     if result := re.search(r'(\d+)', user):
@@ -45,6 +47,15 @@ def duration_formatter(default_unit: str = 'м'):
                 await interaction.response.send_message(str(e), ephemeral=True)
                 return
 
+            max_duration = (86400 * 30) if default_unit == 'д' else (86400 * 14)
+            if security.user_level(interaction.user) >= security.PermissionLevel.GMD:
+                max_duration *= 10
+            if duration_in_seconds and duration_in_seconds > max_duration:
+                await interaction.response.send_message(
+                    f"Максимальная длительность наказания — {max_duration // 86400} дн.",
+                    ephemeral=True
+                )
+                return
             return await func(self, interaction, user, duration_in_seconds, reason, *args, **kwargs)
 
         return wrapper
