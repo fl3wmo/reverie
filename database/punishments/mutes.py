@@ -5,6 +5,8 @@ import typing
 from typing import Literal, Awaitable, Callable, Optional
 from dataclasses import dataclass, asdict
 
+import discord
+from discord import Object, app_commands
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCollection as MotorCollection
 
@@ -35,7 +37,10 @@ class Mute:
 
     async def wait(self, callback):
         start_aware = self.start.replace(tzinfo=datetime.timezone.utc)
-        end = start_aware + datetime.timedelta(seconds=self.duration)
+        try:
+            end = start_aware + datetime.timedelta(seconds=self.duration)
+        except OverflowError:
+            end = datetime.datetime.max.replace(tzinfo=datetime.timezone.utc)
         now = datetime.datetime.now(datetime.timezone.utc)
 
         wait_duration = (end - now).total_seconds()
@@ -114,4 +119,32 @@ class Mutes:
         await self._collection.delete_one({'_id': mute['_id']})
         self.current = [m for m in self.current if m.id != mute['_id']]
         return action
+    
+    async def users_autocomplete(self, mute_type: str, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        mutes = []
+        for mute in sorted(self.current, key=lambda m: m.start, reverse=True):
+            if mute.type != mute_type or mute.guild != interaction.guild.id or (current and current.lower() not in str(mute.user).lower()):
+                continue
+
+            user = interaction.guild.get_member(mute.user) or Object(mute.user)
+            
+            start_aware = mute.start.replace(tzinfo=datetime.timezone.utc) if mute.start.tzinfo is None else mute.start
+            elapsed = datetime.datetime.now(datetime.UTC) - start_aware
+            elapsed_str = f'{int(elapsed.total_seconds() // 3600)}ч {int((elapsed.total_seconds() % 3600) // 60)}м назад'
+            name = (
+                f"{user.display_name} ({elapsed_str})" 
+                if isinstance(user, discord.Member) 
+                else f"{user.id} ({elapsed_str})"
+            )
+            mutes.append(app_commands.Choice(name=name, value=str(user.id)))
+        return mutes[:20]
+    
+    async def users_autocomplete_text(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return await self.users_autocomplete('text', interaction, current)
+    
+    async def users_autocomplete_voice(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return await self.users_autocomplete('voice', interaction, current)
+    
+    async def users_autocomplete_full(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return await self.users_autocomplete('full', interaction, current)
     
