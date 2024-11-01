@@ -60,6 +60,8 @@ class ModeratorTracker:
         for role in roles_give:
             key = 'Одобрено' if role.approved else 'Отклонено'
             roles_dict.setdefault(key, []).append(role)
+        if roles_remove:
+            roles_dict['Снято'] = roles_remove
 
         return ModeratorStats(
             punishments=punishments_dict,
