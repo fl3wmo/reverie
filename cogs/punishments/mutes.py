@@ -91,6 +91,7 @@ class MutesCog(commands.Cog, name='mute'):
     @unmute.command(name='text', description='Снять мут с пользователя в текстовых каналах')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять мут')
+    @app_commands.autocomplete(user=db.punishments.mutes.users_autocomplete_text)
     @security.restricted(security.PermissionLevel.MD)
     async def unmute_text(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
@@ -132,6 +133,7 @@ class MutesCog(commands.Cog, name='mute'):
     @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять мут')
+    @app_commands.autocomplete(user=db.punishments.mutes.users_autocomplete_voice)
     @security.restricted(security.PermissionLevel.MD)
     async def unmute_voice(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
@@ -177,6 +179,7 @@ class MutesCog(commands.Cog, name='mute'):
     @app_commands.default_permissions(manage_nicknames=True)
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно снять полный мут')
+    @app_commands.autocomplete(user=db.punishments.mutes.users_autocomplete_full)
     @security.restricted(security.PermissionLevel.MD)
     async def unmute_full(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
