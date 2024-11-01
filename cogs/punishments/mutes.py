@@ -36,6 +36,7 @@ class MutesCog(commands.Cog, name='mute'):
         self.ctx_menu = app_commands.ContextMenu(
             name='текстовый мут', callback=self.mute_text_screen
         )
+        self.ctx_menu.default_permissions = discord.Permissions(manage_nicknames=True)
         self.bot.tree.add_command(self.ctx_menu)
 
     mute = app_commands.Group(name='mute', description='Выдать мут', default_permissions=discord.Permissions(manage_nicknames=True))

@@ -1,6 +1,8 @@
 import typing
 import datetime
 from motor.motor_asyncio import AsyncIOMotorClient as MotorClient
+
+from database.roles.remove import RolesRemove
 from database.roles.request import RoleRequest
 
 if typing.TYPE_CHECKING:
@@ -11,6 +13,7 @@ class Roles:
         self._client = client
         self._db = self._client['Roles']
         self._col = self._db['Requests']
+        self._remove_col = self._db['RemovedRoles']
         self.reasons_dict = {
             "/c 60": ('⏱️', "На скриншоте не видно точного времени."),
             "Номер сервера": ('🔢', "На скриншоте не видно номера сервера или он не совпадает."),
@@ -69,9 +72,19 @@ class Roles:
             update['$set']['review_reason'] = reason
         await self._col.update_one({'id': request_id}, update)
 
-    async def moderator_work(self, guild: int, moderator: int, date_from: datetime.datetime, date_to: datetime.datetime = None) -> list[RoleRequest]:
+    async def remove_roles(self, user: int, guild: int, roles: list[str], moderator: int) -> RolesRemove:
+        roles = sorted(roles)
+        remove_id = (await self._remove_col.count_documents({})) + 1
+        remove = RolesRemove(
+            id=remove_id, user=user, guild=guild, roles=roles, at=datetime.datetime.now(datetime.timezone.utc), moderator=moderator
+        )
+        await self._remove_col.insert_one(remove.to_dict())
+        return remove
+
+    async def moderator_work(self, guild: int, moderator: int, date_from: datetime.datetime, date_to: datetime.datetime = None) -> (list[RoleRequest], list[RolesRemove]):
         date_from = date_from.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
         if date_to:
             date_to = date_to.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
-        cursor = self._col.find({'guild': guild, 'moderator': moderator, 'counting': True, 'sent_at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
-        return [RoleRequest(**doc) async for doc in cursor]
+        cursor_requests = self._col.find({'guild': guild, 'moderator': moderator, 'counting': True, 'sent_at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
+        cursor_removes = self._remove_col.find({'guild': guild, 'moderator': moderator, 'at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
+        return [RoleRequest(**doc) async for doc in cursor_requests], [RolesRemove(**doc) async for doc in cursor_removes]

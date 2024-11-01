@@ -48,6 +48,10 @@ class RoleRequestHandler:
         else:
             await interaction.message.edit(content=templates.embed_mentions(embed), embed=embed, view=specified_view or request.to_view())
 
+        if request.status in (RequestStatus.APPROVED, RequestStatus.REJECTED):
+            log_channel = [c for c in interaction.guild.channels if 'логи-ролей' in c.name][0]
+            await log_channel.send(embed=embed)
+
 class TakeRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:take:(?P<id>[0-9]+)'):
     def __init__(self, action_id: int) -> None:
         super().__init__(
