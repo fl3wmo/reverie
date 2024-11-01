@@ -126,6 +126,10 @@ class Act:
             await user.send(embed=specified_embed or embed, view=view)
         except discord.Forbidden:
             return
+        except discord.HTTPException:
+            return
+        except Exception as e:
+            print(e)
 
     async def set_prove_link(self, link: str) -> None:
         await self.db.set_prove_link(self.id, link)
