@@ -16,7 +16,7 @@ class WarnsCog(commands.Cog, name='warn'):
         self.bot = bot
         self.db: Warns = db.punishments.warns
 
-    async def on_approve(self, interaction, action_id: int, user=None) -> None:
+    async def on_approve(self, interaction, action_id: int, user=None, auto_kick: bool = True) -> None:
         if not user:
             member, user = await self.bot.getch_any(interaction.guild, user)
             
@@ -27,7 +27,7 @@ class WarnsCog(commands.Cog, name='warn'):
         if warn.count >= 3:
             bans = self.bot.get_cog('ban')
             await bans.warns_end(interaction, user, guild, action)
-        else:
+        elif auto_kick:
             try:
                 await guild.kick(user, reason=action.reason)
             except discord.HTTPException:
@@ -39,15 +39,16 @@ class WarnsCog(commands.Cog, name='warn'):
 
     @app_commands.command(name='warn', description='Предупредить пользователя')
     @app_commands.default_permissions(manage_nicknames=True)
-    @app_commands.rename(user='пользователь', reason='причина')
+    @app_commands.rename(user='пользователь', reason='причина', auto_kick='авто-кик')
     @app_commands.describe(
         user='Пользователь, которого нужно заблокировать',
-        reason='Причина блокировки'
+        reason='Причина блокировки',
+        auto_kick='Кикнуть пользователя'
     )
     @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
     @security.restricted(security.PermissionLevel.MD)
     async def warn_give(self, interaction: discord.Interaction, user: str,
-                        reason: app_commands.Range[str, 1, 512]):
+                        reason: app_commands.Range[str, 1, 512], auto_kick: bool = True):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.SMD
@@ -57,7 +58,7 @@ class WarnsCog(commands.Cog, name='warn'):
         )
 
         if auto_review:
-            await self.on_approve(interaction, act.id, user=user)
+            await self.on_approve(interaction, act.id, user=user, auto_kick=auto_kick)
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 

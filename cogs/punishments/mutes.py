@@ -98,7 +98,8 @@ class MutesCog(commands.Cog, name='mute'):
 
         if member:
             await self.manage_mute_role(member, interaction.guild.id, 'text', 'remove')
-        act = await self.db.remove(user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='text')
+        act = await self.db.remove(user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='text',
+                                   auto_review=security.user_level(interaction.user) > security.PermissionLevel.GMD)
         
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
@@ -188,7 +189,8 @@ class MutesCog(commands.Cog, name='mute'):
             await self.manage_mute_role(member, interaction.guild.id, 'full', 'remove')
 
         act = await self.db.remove(
-            user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='full'
+            user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='full',
+            auto_review=security.user_level(interaction.user) > security.PermissionLevel.GMD
         )
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
