@@ -30,10 +30,14 @@ class Mute:
         data = asdict(self)
         data.pop('_id')
         return data
-
+    
     @property
     def id(self):
         return self._id
+    
+    @property
+    def start_utc(self):
+        return self.start if self.start.tzinfo else self.start.replace(tzinfo=datetime.timezone.utc)
 
     async def wait(self, callback):
         start_aware = self.start.replace(tzinfo=datetime.timezone.utc)
@@ -118,11 +122,10 @@ class Mutes:
 
         await self._collection.delete_one({'_id': mute['_id']})
         self.current = [m for m in self.current if m.id != mute['_id']]
-        return action
     
     async def users_autocomplete(self, mute_type: str, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         mutes = []
-        for mute in sorted(self.current, key=lambda m: m.start, reverse=True):
+        for mute in sorted(self.current, key=lambda m: m.start_utc, reverse=True):
             if mute.type != mute_type or mute.guild != interaction.guild.id or (current and current.lower() not in str(mute.user).lower()):
                 continue
 
