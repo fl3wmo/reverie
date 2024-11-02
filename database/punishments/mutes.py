@@ -122,6 +122,7 @@ class Mutes:
 
         await self._collection.delete_one({'_id': mute['_id']})
         self.current = [m for m in self.current if m.id != mute['_id']]
+        return action
     
     async def users_autocomplete(self, mute_type: str, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         mutes = []
