@@ -17,7 +17,7 @@ class EsBot(commands.Bot):
         self.command_ids = {}
 
     async def setup_hook(self) -> None:
-        #  self.tree.error(on_tree_error)
+        self.tree.error(on_tree_error)
         buttons.load_buttons(self)
         await db.on_load()
         await self.load_extensions()
