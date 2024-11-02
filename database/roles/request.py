@@ -56,11 +56,22 @@ class RoleRequest:
         data.pop('_id')
         return data
 
+    @property
+    def status_emoji(self) -> str:
+        return '📗' if self.status == RequestStatus.APPROVED else '📕' if self.status == RequestStatus.REJECTED else '📙'
+
+    @property
+    def status_symbol(self) -> str:
+        return '+' if self.status == RequestStatus.APPROVED else '-' if self.status == RequestStatus.REJECTED else '?'
+
+    @property
+    def status_text(self) -> str:
+        return 'Одобренное' if self.status == RequestStatus.APPROVED else 'Отклоненное' if self.status == RequestStatus.REJECTED else 'Новое'
+
     def to_embed(self, for_moderator: bool = True, guild: discord.Guild = None) -> discord.Embed:
-        title_prefix = '📗 Одобренное' if self.status == RequestStatus.APPROVED else '📕 Отклоненное' if self.status == RequestStatus.REJECTED else '📙 Новое'
         title_postfix = ' (рассматривается)' if self.status == RequestStatus.UNDER_REVIEW else ' (пересмотрено)' if self.reviewer and not for_moderator else ''
         embed = discord.Embed(
-            title=f'{title_prefix} заявление на роль {title_postfix}',
+            title=f'{self.status_emoji} {self.status_text} заявление на роль {title_postfix}',
             color=discord.Color.green() if self.status == RequestStatus.APPROVED else discord.Color.red() if self.status == RequestStatus.REJECTED else discord.Color.orange(),
             timestamp=self.sent_at.replace(tzinfo=datetime.timezone.utc)
         )
@@ -87,6 +98,21 @@ class RoleRequest:
         embed.set_footer(text=f'Заявление на роль №{self.id}' + (f' (проверено за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if for_moderator and self.checked_at and self.taken_at else ''))
 
         return embed
+
+    def __str__(self) -> str:
+        parts = [
+            f"[{self.status_symbol}] {self.status_text}",
+            f'> Дата: {templates.date(self.sent_at, date_format="d")}',
+            f"> Никнейм: {self.nickname}",
+            f"> Фракция: {self.role}",
+            f"> Ранг: [{self.rang}] {self.role_info.rang_name(self.rang)}",
+            f"> -# Запрос: {self.id}"
+        ]
+        
+        if self.moderator:
+            parts[-1] += f". Модератор: <@{self.moderator}>"
+            
+        return "\n".join(parts)
 
     async def notify_user(self, user: discord.User, moderator: discord.Member = None):
         act = Act(id=self.id, at=datetime.datetime.now(datetime.UTC), user=self.user, guild=self.guild, moderator=self.moderator, type='role_approve' if self.status == RequestStatus.APPROVED else 'role_reject', reviewer=self.reviewer, reason=self.reason, counting=False)

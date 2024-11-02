@@ -1,4 +1,5 @@
 import asyncio
+from typing import NamedTuple
 
 import discord
 from discord.ext import commands
@@ -10,7 +11,7 @@ import validation
 from bot import EsBot
 from buttons.roles import UnderReviewIndicator
 from database import db
-from features import find_channel_by_name
+from features import Pagination, find_channel_by_name
 from info.roles import role_info, RoleInfo
 
 
@@ -18,6 +19,11 @@ def get_organization_roles(member: discord.Member) -> list[RoleInfo]:
     """Получение ролей организации у пользователя."""
     return [role for role in role_info.values() if role.find(member.roles)]
 
+class ActionInfo(NamedTuple):
+    action_text: str
+
+    def to_text(self, index: int) -> str:
+        return f'### {index}. {self.action_text}'
 
 class RolesCog(commands.Cog):
     def __init__(self, bot: EsBot):
@@ -47,7 +53,7 @@ class RolesCog(commands.Cog):
         return find_channel_by_name(guild, 'заявки-на-роли')
 
     async def validate_role_request(self, interaction: discord.Interaction, nickname: str, organization: str, rang: int,
-                                    photo_proof: discord.Attachment) -> (str, RoleInfo):
+                                    photo_proof: discord.Attachment) -> tuple[str, RoleInfo]:
         """Проверка валидности заявки на роль."""
         channel = self.requests_channel(interaction.guild)
         if channel.id != interaction.channel.id:
@@ -152,6 +158,41 @@ class RolesCog(commands.Cog):
             await role.remove(interaction.user)
 
         await interaction.response.send_message('Роль успешно снята', ephemeral=True)
+
+    @app_commands.command(name='role-history', description='История ролей пользователя')
+    @app_commands.rename(user='пользователь')
+    @app_commands.describe(user='Пользователь, историю ролей которого нужно посмотреть')
+    async def role_history(self, interaction: discord.Interaction, user: str):
+        """Команда для просмотра истории ролей пользователя."""
+        member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
+        roles = await self.db.role_history(interaction.guild.id, user.id)
+        if not roles:
+            raise ValueError('У пользователя нет истории ролей')
+
+        paginator = Pagination(
+            bot=self.bot,
+            interaction=interaction,
+            owner=interaction.user,
+            data=list([(index, ActionInfo(action_text=str(role))) for index, role in enumerate(roles, 1)]),
+            page_size=5,
+            embed_title="История ролей",
+        )
+        
+        await paginator.send_initial_message()
+
+    @app_commands.command(name='role-info', description='Информация о роли')
+    @app_commands.rename(request_id='id')
+    @app_commands.describe(request_id='ID заявки')
+    @app_commands.default_permissions(manage_nicknames=True)
+    @security.restricted(security.PermissionLevel.MD)
+    async def role_info(self, interaction: discord.Interaction, request_id: int):
+        """Команда для просмотра информации о роли."""
+        request = await self.db.get_request_by_id(request_id)
+        if not request:
+            raise ValueError('Заявка не найдена')
+
+        embed = request.to_embed()
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     async def remove_role_context(self, interaction: discord.Interaction, target: discord.Member):
         """Контекстное меню для снятия роли."""
