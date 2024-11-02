@@ -81,10 +81,14 @@ class Roles:
         await self._remove_col.insert_one(remove.to_dict())
         return remove
 
-    async def moderator_work(self, guild: int, moderator: int, date_from: datetime.datetime, date_to: datetime.datetime = None) -> (list[RoleRequest], list[RolesRemove]):
+    async def moderator_work(self, guild: int, moderator: int, date_from: datetime.datetime, date_to: datetime.datetime = None) -> tuple[list[RoleRequest], list[RolesRemove]]:
         date_from = date_from.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
         if date_to:
             date_to = date_to.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
         cursor_requests = self._col.find({'guild': guild, 'moderator': moderator, 'counting': True, 'sent_at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
         cursor_removes = self._remove_col.find({'guild': guild, 'moderator': moderator, 'at': {'$gte': date_from, '$lte': date_to or (date_from + datetime.timedelta(days=1))}})
         return [RoleRequest(**doc) async for doc in cursor_requests], [RolesRemove(**doc) async for doc in cursor_removes]
+
+    async def role_history(self, guild: int, user: int) -> list[RoleRequest]:
+        return [RoleRequest(**doc) async for doc in self._col.find({'guild': guild, 'user': user})]
+    

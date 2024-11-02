@@ -96,7 +96,7 @@ def embed_mentions(embed: discord.Embed) -> str:
             all_text += field.value
     groups = _mention_regex.findall(all_text)
     groups = list(set(groups))
-    return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||'
+    return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||' if groups else ''
 
 
 async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, **objects) -> None:
