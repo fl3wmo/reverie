@@ -74,3 +74,17 @@ class Actions:
             elif 'remove' in act.type:
                 await warns.on_remove_approve(act_id)
         await self._collection.update_one({'id': act_id}, {'$set': {'reviewer': reviewer}})
+
+    async def similar(self, guild_id: int) -> list[Act]:
+        pipeline = [
+            {'$match': {'guild': guild_id}},
+            {'$group': {
+            '_id': {'user': '$user', 'moderator': '$moderator'},
+            'count': {'$sum': 1}
+            }},
+            {'$match': {'count': {'$gt': 1}}}
+        ]
+        results = [doc async for doc in self._collection.aggregate(pipeline)]
+        query = {'$or': [{'user': doc['_id']['user'], 'moderator': doc['_id']['moderator']} for doc in results]}
+        return [Act(**doc) async for doc in self._collection.find(query)] if results else []
+    

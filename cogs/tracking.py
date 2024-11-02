@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Dict
+from typing import List, NamedTuple, Optional, Dict, Tuple
 
 import discord
 from discord import app_commands
@@ -7,6 +7,7 @@ from discord.app_commands import Choice
 from discord.ext import commands
 
 import autocompletes
+from features import Pagination
 import security
 import templates
 from bot import EsBot
@@ -14,6 +15,15 @@ from database.online.features import is_date_valid
 from info.tracking.stats import ModeratorStats
 from info.tracking.tracker import ModeratorTracker
 from info.tracking.formatter import StatsFormatter
+from database import db
+
+
+class ActionInfo(NamedTuple):
+    moderator_id: int
+    action_text: str
+
+    def to_text(self, index: int) -> str:
+        return f"### 🧑‍💼 <@{self.moderator_id}>\n{self.action_text}"
 
 
 class TrackingCog(commands.GroupCog, name='tracking'):
@@ -190,6 +200,45 @@ class TrackingCog(commands.GroupCog, name='tracking'):
 
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name='check', description='Дополнительная проверка')
+    @security.restricted(security.PermissionLevel.CUR)
+    async def check(self, interaction: discord.Interaction):
+        similar_actions = await db.actions.similar(interaction.guild.id)
+        if not similar_actions:
+            return await interaction.response.send_message('Похожих действий не найдено', ephemeral=True)
+        
+        # Process and format the data
+        formatted_data: List[Tuple[int, ActionInfo]] = []
+        moderators = {}
+        
+        # Group actions by moderator and user
+        for action in similar_actions:
+            moderators.setdefault(action.moderator, {}).setdefault(action.user, []).append(action)
+        
+        # Format the data for pagination
+        index = 0
+        for moderator_id, users in moderators.items():
+            action_text = ""
+            for user_id, actions in users.items():
+                action_text += f"<@{user_id}> ({len(actions)} действий)\n-# Acts: {', '.join(str(a.id) for a in actions)}\n"
+            action_info = ActionInfo(
+                moderator_id=moderator_id,
+                action_text=action_text
+            )
+            formatted_data.append((index, action_info))
+            index += 1
+        
+        # Create and send paginated view
+        paginator = Pagination(
+            bot=self.bot,
+            interaction=interaction,
+            owner=interaction.user,
+            data=formatted_data,
+            page_size=5,
+            embed_title="Похожие действия"
+        )
+        
+        await paginator.send_initial_message()
 
 async def setup(bot: EsBot):
     await bot.add_cog(TrackingCog(bot))
