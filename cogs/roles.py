@@ -123,7 +123,7 @@ class RolesCog(commands.Cog):
         async for message in channel.history(limit=5):
             if message.author.id == self.bot.user.id and not message.embeds:
                 await message.delete()
-                return await message.channel.send(templates.role_requests(command_id))
+        return await message.channel.send(templates.role_requests(command_id))
 
     @app_commands.command(name='role', description='Подать заявление на роль')
     @app_commands.rename(nickname='никнейм', organization='организация', rang='ранг', photo_proof='скриншот-статистики',
