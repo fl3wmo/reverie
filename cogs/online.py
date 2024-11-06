@@ -86,8 +86,8 @@ class OnlineCog(commands.Cog):
 
         embed.add_field(name='Пользователь', value=user.mention, inline=False)
         embed.add_field(name='Неделя', value=f'{week.name}\n-# ({start_date.strftime("%d.%m")} - {end_date.strftime("%d.%m")})', inline=True)
-        embed.add_field(name='Общее время', value=templates.time(total_online), inline=True)
-        embed.add_field(name='По датам', value='\n'.join(f'{datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")}: {templates.time(info.total_seconds)}' for date, info in online.items()) or 'Нет активности.', inline=False)
+        embed.add_field(name='Общее время', value=templates.time(total_online, display_hour=True), inline=True)
+        embed.add_field(name='По датам', value='\n'.join(f'{datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")}: {templates.time(info.total_seconds, display_hour=True)}' for date, info in online.items()) or 'Нет активности.', inline=False)
 
         channels = {}
         for info in online.values():
@@ -96,7 +96,7 @@ class OnlineCog(commands.Cog):
                     channels[channel.channel_name] = 0
                 channels[channel.channel_name] += channel.seconds
 
-        embed.add_field(name='По каналам', value='\n'.join(f'{channel}: {templates.time(seconds)}' for channel, seconds in channels.items()) or 'Нет активности.', inline=False)
+        embed.add_field(name='По каналам', value='\n'.join(f'{channel}: {templates.time(seconds, display_hour=True)}' for channel, seconds in channels.items()) or 'Нет активности.', inline=False)
         await interaction.response.send_message(content=templates.embed_mentions(embed), embed=embed, ephemeral=True)
 
     async def update_hassle_data(self):

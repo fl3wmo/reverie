@@ -50,7 +50,7 @@ def user(obj: discord.Member | discord.User | int, dm: bool = False) -> str:
     return result
 
 
-def time(seconds: float | None, precise: bool = False) -> str:
+def time(seconds: float | None, precise: bool = False, display_hour: bool = False) -> str:
     if seconds is None:
         return 'Навсегда'
 
@@ -69,6 +69,8 @@ def time(seconds: float | None, precise: bool = False) -> str:
         else:
             return f"{hours:.0f} ч." + (f' {minutes:.0f} мин.' if minutes else '')
     else:
+        if display_hour:
+            return f'{hours:.0f} ч.' + (f' {minutes:.0f} мин.' if minutes else '')
         return f"{seconds // 86400:.0f} дн."
 
 
