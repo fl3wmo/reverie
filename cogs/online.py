@@ -100,6 +100,22 @@ class OnlineCog(commands.Cog):
         embed.add_field(name='По каналам', value='\n'.join(f'{channel}: {templates.time(seconds, display_hour=True)}' for channel, seconds in channels.items()) or 'Нет активности.', inline=False)
         await interaction.response.send_message(content=templates.embed_mentions(embed), embed=embed, ephemeral=True)
 
+    @app_commands.command(name='online-top', description='Показать топ пользователей по онлайну')
+    @app_commands.rename(year='год', month='месяц', is_open='открытые-каналы', this_guild='этот-сервер')
+    @app_commands.describe(
+        year='Год в формате YYYY',
+        month='Месяц в формате MM',
+        is_open='Подсчитывать онлайн только в открытых каналах.',
+        this_guild='Подсчитывать онлайн только на этом сервере.'
+    )
+    async def online_top(self, interaction: discord.Interaction, year: app_commands.Range[int, 2023, datetime.datetime.now().year], month: app_commands.Range[int, 1, 12], is_open: bool, this_guild: bool = True):
+        await interaction.response.defer(ephemeral=True)
+        info = await self.db.get_top(year, month, is_open, interaction.guild.id if this_guild else None)
+        message = f'### 🏆 Топ по онлайну за {str(month).zfill(2)}.{year}\n'
+        for index, user_info in enumerate(info, start=1):
+            message += f'{index}. <@{user_info['user_id']}>: {templates.time(user_info['total_seconds'], display_hour=True)}\n'
+        await interaction.followup.send(message, ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
+
     async def update_hassle_data(self):
         if self.hassle_data['last_update'] and (datetime.datetime.now(datetime.UTC) - self.hassle_data['last_update']).seconds < 60:
             return
