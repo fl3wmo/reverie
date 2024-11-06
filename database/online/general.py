@@ -192,6 +192,24 @@ class OnlineDatabase:
 
         return {date: DateInfo(all_online) for date, all_online in dates.items()}
 
+    async def get_top(self, year: int, month: int, is_open: bool, guild_id: int | None = None):
+        start_date = f"{year}-{str(month).zfill(2)}-01"
+        end_date = f"{year}-{str(month).zfill(2)}-31"
+
+        query = "SELECT user_id, guild_id, SUM(seconds) as total_seconds FROM all_online WHERE date BETWEEN ? AND ?"
+        params = [start_date, end_date]
+        
+        if guild_id:
+            query += " AND guild_id = ?"
+            params.append(guild_id)
+        if is_open:
+            query += " AND is_counting = ?"
+            params.append(is_open)
+        
+        query += " GROUP BY user_id, guild_id ORDER BY total_seconds DESC LIMIT 20"
+        cursor = await self.db.execute(query, params)
+        top = [{'user_id': row[0], 'guild_id': row[1], 'total_seconds': row[2]} for row in await cursor.fetchall()]
+        return top
 
     def __del__(self):
         import asyncio
