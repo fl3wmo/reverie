@@ -112,9 +112,9 @@ class OnlineCog(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         info = await self.db.get_top(year, month, is_open, interaction.guild.id if this_guild else None)
         message = f'### 🏆 Топ по онлайну за {str(month).zfill(2)}.{year}\n'
-        for index, user_info in enumerate(info, start=1):
-            message += f'{index}. <@{user_info['user_id']}>: {templates.time(user_info['total_seconds'], display_hour=True)}\n'
-        await interaction.followup.send(message, ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
+        for index, (user_id, total_seconds) in enumerate(info.items(), start=1):
+            message += f'{index}. <@{user_id}>: {templates.time(total_seconds, display_hour=True)}\n'
+        await interaction.followup.send(message, ephemeral=True)
 
     async def update_hassle_data(self):
         if self.hassle_data['last_update'] and (datetime.datetime.now(datetime.UTC) - self.hassle_data['last_update']).seconds < 60:
