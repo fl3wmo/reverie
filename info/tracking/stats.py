@@ -25,5 +25,5 @@ class ModeratorStats:
         return (
             f'`☠️` {format_plural(self.total_punishments, ("наказание", "наказания", "наказаний"))}\n'
             f'`🎭` {format_plural(self.total_roles, ("роль", "роли", "ролей"))}\n'
-            f'`⏱️` **{templates.time(self.online_time)}**'
+            f'`⏱️` **{templates.time(self.online_time, display_hour=True)}**'
         )
