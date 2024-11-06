@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+import security
 import templates
 from bot import EsBot
 from buttons.online import online_reload
@@ -52,6 +53,10 @@ class OnlineCog(commands.Cog):
         date = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d')
         if not user:
             user = interaction.user
+            
+        if security.user_level(interaction.user) < security.PermissionLevel.MD and user.id != interaction.user.id:
+            raise ValueError('Вы не можете просматривать онлайн других пользователей.')
+        
         info = await self.db.get_info(is_open, user_id=user.id, guild_id=interaction.guild.id, date=date)
         await interaction.response.send_message(embed=info.to_embed(user.id, is_open, date), view=online_reload(user.id, interaction.user.id, interaction.guild.id, is_open, date))
 
@@ -59,6 +64,7 @@ class OnlineCog(commands.Cog):
     @app_commands.rename(user='пользователь', week='неделя')
     @app_commands.describe(user='Пользователь, чей онлайн вы хотите проверить', week='Текущая или прошлая неделя')
     @app_commands.choices(week=[app_commands.Choice(name='Текущая', value='Текущая'), app_commands.Choice(name='Прошлая', value='Прошлая')])
+    @app_commands.default_permissions(manage_nicknames=True)
     async def week_online(self, interaction: discord.Interaction, week: app_commands.Choice[str], user: discord.Member = None):
         today = datetime.datetime.now()
         user = user or interaction.user

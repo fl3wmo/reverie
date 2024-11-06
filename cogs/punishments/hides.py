@@ -10,7 +10,6 @@ from bot import EsBot
 from database import db
 
 
-@app_commands.default_permissions(manage_nicknames=True)
 class HideCog(commands.Cog, name='hide'):
     def __init__(self, bot: EsBot):
         self.bot = bot
@@ -21,6 +20,7 @@ class HideCog(commands.Cog, name='hide'):
     @app_commands.describe(
         user='Пользователь, которого нужно скрыть',
     )
+    @app_commands.default_permissions(manage_nicknames=True)
     @security.restricted(security.PermissionLevel.MD)
     async def hide_give(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
@@ -35,6 +35,7 @@ class HideCog(commands.Cog, name='hide'):
     @app_commands.command(name='unhide', description='Убрать скрытие с пользователя')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, с которого нужно убрать скрытие')
+    @app_commands.default_permissions(manage_nicknames=True)
     @security.restricted(security.PermissionLevel.MD)
     async def hide_remove(self, interaction: discord.Interaction, user: str):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
