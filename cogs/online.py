@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+
 import security
 import templates
 from bot import EsBot
@@ -53,7 +54,7 @@ class OnlineCog(commands.Cog):
         date = datetime.datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d')
         if not user:
             user = interaction.user
-            
+
         if security.user_level(interaction.user) < security.PermissionLevel.MD and user.id != interaction.user.id:
             raise ValueError('Вы не можете просматривать онлайн других пользователей.')
         

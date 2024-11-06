@@ -10,6 +10,7 @@ from bot import EsBot
 from database import db
 
 
+@app_commands.default_permissions(manage_nicknames=True)
 class HideCog(commands.Cog, name='hide'):
     def __init__(self, bot: EsBot):
         self.bot = bot
