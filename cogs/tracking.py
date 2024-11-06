@@ -26,6 +26,7 @@ class ActionInfo(NamedTuple):
         return f"### 🧑‍💼 <@{self.moderator_id}>\n{self.action_text}"
 
 
+@app_commands.default_permissions(manage_nicknames=True)
 class TrackingCog(commands.GroupCog, name='tracking'):
     def __init__(self, bot: EsBot):
         self.bot = bot
