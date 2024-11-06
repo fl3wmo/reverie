@@ -60,7 +60,7 @@ def time(seconds: float | None, precise: bool = False, display_hour: bool = Fals
         minutes = seconds // 60
         local_seconds = seconds % 60
         return f'{minutes:.0f} мин.' if not precise else f'{minutes:.0f} мин. {local_seconds:.0f} сек.'
-    elif seconds < 86400:
+    elif seconds < 86400 or display_hour:
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
         local_seconds = seconds % 60
@@ -69,8 +69,6 @@ def time(seconds: float | None, precise: bool = False, display_hour: bool = Fals
         else:
             return f"{hours:.0f} ч." + (f' {minutes:.0f} мин.' if minutes else '')
     else:
-        if display_hour:
-            return f'{hours:.0f} ч.' + (f' {minutes:.0f} мин.' if minutes else '')
         return f"{seconds // 86400:.0f} дн."
 
 
