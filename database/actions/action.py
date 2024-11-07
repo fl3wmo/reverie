@@ -56,7 +56,7 @@ class Act:
     def _log_channel(self, guild: discord.Guild) -> discord.TextChannel:
         search = _log_channels[_action_category(self.type)]
         for channel in guild.text_channels:
-            if channel.name == search:
+            if search in channel.name:
                 return channel
         raise ValueError(f'Не найден канал логов {search}')
 
@@ -110,9 +110,13 @@ class Act:
         ping_reviewers = under_verify and (('ban' in self.type and 'give' in self.type) or 'warn' in self.type)
         if ping_reviewers:
             mentions += ' ' + ' '.join([role.mention for role in security.reviewers(guild)])
-        message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
+        message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
+        else:
+            thread = await message.create_thread(name='Доказательства', auto_archive_duration=60)
+            if isinstance(self.moderator, discord.Member):
+                await thread.add_user(self.moderator)
         return message
 
     async def notify_user(self, specified_embed=None, **objects) -> None:
