@@ -113,7 +113,7 @@ class Act:
         message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
-        else:
+        elif under_verify:
             thread = await message.create_thread(name='Доказательства', auto_archive_duration=60)
             if isinstance(self.moderator, discord.Member):
                 await thread.add_user(self.moderator)
