@@ -37,7 +37,7 @@ class RolesCog(commands.Cog):
 
     async def rang_callback(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[int]]:
         current = 0 if not current.isdecimal() else int(current)
-        user_choice = interaction.namespace['организация']
+        user_choice = interaction.namespace.__dict__.get('организация')
         role = role_info.get(user_choice)
 
         if not role:
