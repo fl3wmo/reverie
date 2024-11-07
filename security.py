@@ -77,6 +77,22 @@ def moderation_team(guild: discord.Guild) -> list[discord.Role]:
                 roles.append(role)
     return roles
 
+def head_moderation_team(guild: discord.Guild) -> discord.Role:
+    for role in guild.roles:
+        if 'Discord™' in role.name:
+            return role
+    raise ValueError('Не найдена роль Discord™')
+
+def is_in_head_moderation_team(user: discord.User, guilds: list[discord.Guild]) -> bool:
+    for guild in guilds:
+        try:
+            role = head_moderation_team(guild)
+        except ValueError:
+            continue
+        if role in user.roles:
+            return True
+    return False
+
 def restricted(level: PermissionLevel):
     def wrapper(func):
         @functools.wraps(func)
