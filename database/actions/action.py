@@ -56,7 +56,7 @@ class Act:
     def _log_channel(self, guild: discord.Guild) -> discord.TextChannel:
         search = _log_channels[_action_category(self.type)]
         for channel in guild.text_channels:
-            if channel.name == search:
+            if search in channel.name:
                 return channel
         raise ValueError(f'Не найден канал логов {search}')
 
