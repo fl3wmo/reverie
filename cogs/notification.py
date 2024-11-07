@@ -42,7 +42,7 @@ class Notification(commands.Cog):
         need_lower = [a for a in content if a.isalpha()][-1].islower()
 
         extend = ((datetime.datetime.now().hour + 1) % 24) <= 8
-        duration = (10 if user.status == discord.Status.online else 60 if extend else 30) * 60
+        duration = (10 if user.status.value == discord.Status.online else 60 if extend else 30) * 60
 
         embed = discord.Embed(
             title='🚨 Предупреждение!',
