@@ -33,7 +33,7 @@ class RolesetCog(commands.Cog):
             
         head_mod_levels = [security.PermissionLevel.GMD, security.PermissionLevel.DS]
         is_new_head_mod = new_level in head_mod_levels and old_level not in head_mod_levels
-        is_removed_head_mod = new_level not in head_mod_levels and old_level in head_mod_levels
+        is_removed_head_mod = new_level not in head_mod_levels and old_level in head_mod_levels and not security.is_in_head_moderation_team(after, self.bot.guilds)
         
         for guild in self.bot.guilds:
             try:
@@ -47,10 +47,10 @@ class RolesetCog(commands.Cog):
                 
             if is_new_head_mod and head_mod_role not in member.roles:
                 await member.add_roles(head_mod_role)
-            elif is_removed_head_mod and not security.is_in_head_moderation_team(after, self.bot.guilds):
+            elif is_removed_head_mod:
                 if head_mod_role in member.roles:
                     await member.remove_roles(head_mod_role)
-                    
+
 
 async def setup(bot: EsBot):
     await bot.add_cog(RolesetCog(bot))
