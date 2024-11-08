@@ -19,7 +19,18 @@ from info.roles import role_info, RoleInfo
 from database.notifications import Notification as NotificationInfo
 
 
-profile_places = ['Никнейм', 'Аватар', '«Обо мне»', 'Местоимение', 'Статус', 'Баннер', 'Отображаемое имя в профиле', 'Юзернейм', 'Тег']
+profile_places: dict[str, str] = {
+    'Никнейм': "XtOyFvm",
+    'Аватар': 'E80Q7Sy',
+    '«Обо мне»': 'YOdiSNd',
+    'Местоимение': "i0vaXBO",
+    'Статус': 'jzIiiP7',
+    'Баннер': '9rbUDfK',
+    'Отображаемое имя в профиле': 'xyO9kJF',
+    'Юзернейм': 'uk57ZV5',
+    'Тег': 'FaL3Bbq',
+    'Клантег': 'wN33Gnk'
+}
 
 class Notification(commands.Cog):
     def __init__(self, bot: EsBot):
@@ -29,7 +40,7 @@ class Notification(commands.Cog):
     @app_commands.command(name='notify', description='Уведомить пользователя о нарушении в профиле.')
     @app_commands.rename(user='пользователь', content='место')
     @app_commands.describe(user='Пользователь, которому вы хотите отправить уведомление.', content='Место профиля где присутствует нарушение.')
-    @app_commands.choices(content=[app_commands.Choice(name=place, value=place) for place in profile_places])
+    @app_commands.choices(content=[app_commands.Choice(name=key, value=value) for key, value in profile_places.items()])
     @app_commands.default_permissions(manage_nicknames=True)
     @security.restricted(security.PermissionLevel.MD)
     async def notify(self, interaction: discord.Interaction, user: discord.Member, content: app_commands.Choice[str]):
@@ -37,9 +48,8 @@ class Notification(commands.Cog):
         if not notification_channel:
             raise ValueError('Не найден канал для уведомлений.')
         
-        content = content.value
-        add_e = [a for a in content if a.isalpha()][-1] == 'е'
-        need_lower = [a for a in content if a.isalpha()][-1].islower()
+        add_e = [a for a in content.name if a.isalpha()][-1] == 'е'
+        need_lower = [a for a in content.name if a.isalpha()][-1].islower()
 
         duration = (10 if user.status.value == 'online' else 30) * 60
 
@@ -47,7 +57,7 @@ class Notification(commands.Cog):
             title='🚨 Предупреждение!',
             description=(
                 f'Уважаемый пользователь, в вашем профиле найдено нарушение.\n'
-                f'### Немедленно измените ваш{"е" if add_e else ""} {content.lower() if need_lower else content}.\n'
+                f'### Немедленно измените ваш{"е" if add_e else ""} {content.name.lower() if need_lower else content.name}.\n'
                 f'В случае, если вы не согласны с действиями модератора, вы можете подать жалобу на [форум проекта](https://forum.radmir.games).'
             ),
             color=discord.Color.red(),
@@ -57,11 +67,12 @@ class Notification(commands.Cog):
         embed.add_field(name='Пользователь', value=user.mention)
         embed.add_field(name='Модератор', value=interaction.user.mention)
         embed.add_field(name='Время на смену', value=f'{duration // 60} мин.')
+        embed.add_field(name='Что нужно изменить?', value=f'Вам нужно изменить [{content.name}](https://imgur.com/{content.value}.png).\nЕсли вы не знаете что это - нажмите на название, и вы увидите пример.')
         embed.set_footer(text='Время отправки уведомления')
 
         notification_message = await notification_channel.send(templates.embed_mentions(embed), embed=embed, view=ForumLink())
 
-        await self.db.give(user=user.id, message_id=notification_message.id, guild=interaction.guild.id, moderator=interaction.user.id, notification_type=content, duration=duration)
+        await self.db.give(user=user.id, message_id=notification_message.id, guild=interaction.guild.id, moderator=interaction.user.id, notification_type=content.name, duration=duration)
 
         await interaction.response.send_message(f"## 🥳 Успех!\n[Действие]({notification_message.jump_url}) успешно выполнено.\n\n"
                                         f"По прошествии `{duration // 60} мин.` вам в личные сообщения придёт уведомление.", ephemeral=True)
