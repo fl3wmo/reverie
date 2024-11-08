@@ -51,6 +51,8 @@ class Notification(commands.Cog):
         add_e = [a for a in content.name if a.isalpha()][-1] == 'е'
         need_lower = [a for a in content.name if a.isalpha()][-1].islower()
 
+        member, user = await self.bot.getch_any(interaction.guild, user.id, interaction.user)
+        
         duration = (10 if user.status.value == 'online' else 30) * 60
 
         embed = discord.Embed(
