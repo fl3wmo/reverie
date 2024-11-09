@@ -18,7 +18,6 @@ from info.roles import role_info, RoleInfo
 class RolesetCog(commands.Cog):
     def __init__(self, bot: EsBot):
         self.bot = bot
-        self.db = db.roles
     
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
