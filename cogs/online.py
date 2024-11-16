@@ -10,7 +10,7 @@ import security
 import templates
 from bot import EsBot
 from buttons.online import online_reload
-from autocompletes import date
+import autocompletes
 from database import db
 from database.online.features import is_counting, is_date_valid
 from database.online.general import CurrentInfo
@@ -41,7 +41,7 @@ class OnlineCog(commands.Cog):
         date='Дата в формате dd.mm.YYYY',
         is_open='Подсчитывать онлайн только в открытых каналах.'
     )
-    @app_commands.autocomplete(date=date)
+    @app_commands.autocomplete(date=autocompletes.date)
     async def online(self, interaction: discord.Interaction,
                      user: discord.Member,
                      date: str,
