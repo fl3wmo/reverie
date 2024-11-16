@@ -196,7 +196,7 @@ class RolesCog(commands.Cog):
 
     async def remove_role_context(self, interaction: discord.Interaction, target: discord.Member):
         """Контекстное меню для снятия роли."""
-        if security.user_level(interaction.user) < security.PermissionLevel.MD:
+        if security.user_level(interaction.user) < security.PermissionLevel.SMD:
             raise ValueError('У вас нет прав')
         security.user_permissions_compare(interaction.user, target)
 
