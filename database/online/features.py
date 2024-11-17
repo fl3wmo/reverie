@@ -4,7 +4,7 @@ import discord
 
 
 def is_counting(channel: discord.VoiceChannel) -> bool:
-    if "вопрос" in channel.name.lower() or "общение" in channel.name.lower():
+    if "вопрос" in channel.name.lower() or ''.join([a for a in channel.name.lower() if a.isalnum()]).endswith("общение"):
         if channel.user_limit > 2 or not channel.user_limit:
             if (
                     channel.overwrites_for(channel.guild.default_role).connect is not False and
