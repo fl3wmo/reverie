@@ -12,7 +12,7 @@ class PermissionLevel(enum.IntEnum):
     AD = 3
     GMD = 4
     DS = 5
-    CUR = 6
+    CUR = 7
 
 
 _moderator_levels = {
@@ -22,8 +22,9 @@ _moderator_levels = {
     3: ('AD', "Ассистент Discord"),
     4: ('GMD', "Главный Модератор"),
     5: ('DS', "Следящий за Discord"),
-    6: ('RKN', "Руководитель направления Discord"),
-    7: ('K+', "Руководство Discord")
+    6: ('DS+', '△'),
+    7: ('RKN', "Руководитель направления Discord"),
+    8: ('K+', "Руководство Discord")
 }
 
 
