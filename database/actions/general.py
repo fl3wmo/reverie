@@ -17,8 +17,13 @@ class Actions:
     async def get(self, act_id: int) -> Act:
         return Act(**await self._collection.find_one({'id': act_id}))
 
-    async def by_user(self, user: int, *, counting: bool = False) -> list[Act]:
-        return [Act(**doc) async for doc in self._collection.find({'user': user} if not counting else {'user': user, 'counting': True})]
+    async def by_user(self, user: int, *, guild: typing.Optional[int] = None, counting: bool = False) -> list[Act]:
+        query = {'user': user}
+        if guild:
+            query['guild'] = guild
+        if counting:
+            query['counting'] = True
+        return [Act(**doc) async for doc in self._collection.find(query)]
 
     async def by_moderator(self, moderator: int, *, counting: bool = False, guild: int = None, date_from: datetime.datetime = None, date_to: datetime.datetime = None) -> list[Act]:
         query = {'moderator': moderator}

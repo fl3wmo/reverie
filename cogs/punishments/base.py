@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+import security
 import templates
 from bot import EsBot
 from database import db
@@ -27,14 +28,17 @@ class PunishmentsBase(commands.Cog, name='punishments'):
         await interaction.response.send_message(templates.embed_mentions(embed), embed=embed, ephemeral=True)
 
     @app_commands.command(name='alist', description='Выводит список нарушений пользователя')
-    @app_commands.describe(user='ID пользователя для вывода списка нарушений')
-    @app_commands.rename(user='id-пользователя')
+    @app_commands.describe(user='ID пользователя для вывода списка нарушений', global_alist='Выводить нарушения на всех серверах (DS+)')
+    @app_commands.rename(user='id-пользователя', global_alist='глобальный')
     @app_commands.default_permissions(manage_nicknames=True)
-    async def alist(self, interaction: discord.Interaction, user: str):
+    async def alist(self, interaction: discord.Interaction, user: str, global_alist: bool):
         owner = interaction.user
+        if global_alist and security.user_level(owner) <= security.PermissionLevel.DS:
+            raise ValueError('Недостаточно прав для просмотра глобального списка')
+
         _, user = await self.bot.getch_any(interaction.guild, user)
 
-        actions = list(enumerate(await db.actions.by_user(user.id, counting=True), 1))
+        actions = list(enumerate(await db.actions.by_user(user.id, guild=interaction.guild.id if not global_alist else None, counting=True), 1))
         if not actions:
             raise ValueError('Наказаний не найдено')
 
