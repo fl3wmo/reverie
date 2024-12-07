@@ -140,6 +140,40 @@ class OnlineCog(commands.Cog):
             embed.add_field(name=f'{index}', value=f'{online_data["players"]}/{online_data["maxPlayers"]}', inline=True)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    @app_commands.command(name='admin-online')
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.rename(date='дата')
+    @app_commands.describe(
+        date='Дата в формате dd.mm.YYYY'
+    )
+    @app_commands.autocomplete(date=autocompletes.date)
+    async def admin_online(self, interaction: discord.Interaction, date: str):
+        if not is_date_valid(date):
+            raise ValueError('Неверный формат даты. Формат: dd.mm.YYYY.\nПример: 07.07.2077')
+
+        date_obj = datetime.datetime.strptime(date, '%d.%m.%Y')
+        administrators = security.administration(interaction.guild).members
+
+        stats = {
+            admin: await self.db.get_info(is_open=True, user_id=admin.id, guild_id=interaction.guild.id, date=date_obj.strftime('%Y-%m-%d'))
+            for admin in administrators
+        }
+
+        embed = discord.Embed(
+            title=f'🛠️ Статистика за {date}',
+            color=discord.Color.light_embed(),
+            timestamp=discord.utils.utcnow()
+        )
+        embed.set_footer(text='Информация обновлена')
+        embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
+
+        all_info = [f'- {admin.display_name}: {info.total_time}'
+                    for admin, info in stats.items()]
+
+        embed.description = '\n'.join(all_info) or 'Нет активности.'
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     async def join(self, member: discord.Member, channel: discord.VoiceChannel) -> None:
         await self.db.add_join_info(member, channel, is_counting(channel))
 

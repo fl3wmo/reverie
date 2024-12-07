@@ -77,4 +77,4 @@ class Punishments:
             app_commands.Choice(name=reason, value=reason)
             for reason, index in choices
             if index > 50
-        ]
+        ][:25]
