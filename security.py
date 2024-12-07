@@ -78,6 +78,12 @@ def moderation_team(guild: discord.Guild) -> list[discord.Role]:
                 roles.append(role)
     return roles
 
+def administration(guild: discord.Guild) -> discord.Role | None:
+    for role in guild.roles:
+        if role.name.lower().endswith('администратор'):
+            return role
+    return None
+
 def head_moderation_team(guild: discord.Guild) -> discord.Role:
     for role in guild.roles:
         if 'Discord™' in role.name:
