@@ -144,7 +144,6 @@ class OnlineCog(commands.Cog):
     @app_commands.default_permissions(administrator=True)
     @app_commands.rename(date='дата')
     @app_commands.describe(
-        moderator='Модератор, действия которого нужно посмотреть',
         date='Дата в формате dd.mm.YYYY'
     )
     @app_commands.autocomplete(date=autocompletes.date)
