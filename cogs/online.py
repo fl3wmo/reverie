@@ -167,8 +167,8 @@ class OnlineCog(commands.Cog):
         embed.set_footer(text='Информация обновлена')
         embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
 
-        all_info = [f'- {admin.display_name}: {info.total_time}'
-                    for admin, info in stats.items()]
+        all_info = [f'{index}. {admin.display_name}: {"**" if info.total_seconds else ""}{info.total_time}{"**" if info.total_seconds else ""}'
+                    for index, (admin, info) in enumerate(sorted(stats.items(), key=lambda x: x[1].total_seconds, reverse=True))]
 
         embed.description = '\n'.join(all_info) or 'Нет активности.'
 
