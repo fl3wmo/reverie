@@ -248,13 +248,16 @@ async def create_roles(guild: discord.Guild):
         permissions = mute_restrictions(mute_type)
         mute_role = await guild.create_role(name=f'Mute » {mute_type.capitalize()}',
                                             permissions=discord.Permissions(**permissions))
-
+        only_rules = False
         for channel in guild.channels:
             try:
                 channel_overwrite = dict(permissions)
                 for action in [a for a in unable_actions(channel) if a in channel_overwrite]:
                     channel_overwrite.pop(action)
-                if 'правила' in channel.name:
+                if channel.name.endswith('правила'):
+                    if only_rules:
+                        continue
+                    only_rules = True
                     channel_overwrite['view_channel'] = True
                 if channel_overwrite:
                     await channel.set_permissions(mute_role, overwrite=discord.PermissionOverwrite(**channel_overwrite))
