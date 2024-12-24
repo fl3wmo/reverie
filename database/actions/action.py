@@ -22,13 +22,14 @@ type action = Literal[
     'temp_mute_give', 'temp_mute_remove',
 ]
 
-def _action_category(action_type: action) -> str:
-    return 'roles' if 'role' in action_type else 'punishments'
+def _action_category(action_type: action, fast: bool = False) -> str:
+    return 'roles' if 'role' in action_type else 'punishments' if not fast else 'punishments_fast'
 
 
 _log_channels = {
     'roles': "логи-ролей",
-    'punishments': "выдача-наказаний"
+    'punishments': "выдача-наказаний",
+    'punishments_fast': 'запрос-на-выдачу'
 }
 
 
@@ -53,8 +54,8 @@ class Act:
         data.pop('_id')
         return data
 
-    def _log_channel(self, guild: discord.Guild) -> discord.TextChannel:
-        search = _log_channels[_action_category(self.type)]
+    def _log_channel(self, guild: discord.Guild, fast: bool = False) -> discord.TextChannel:
+        search = _log_channels[_action_category(self.type)] if not fast else _log_channels[_action_category(self.type)]
         for channel in guild.text_channels:
             if search in channel.name:
                 return channel
@@ -103,13 +104,13 @@ class Act:
         return embed
 
     async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, **objects) -> discord.Message:
-        channel = self._log_channel(guild)
         under_verify = not self.reviewer
         embed = self.to_embed(under_verify=under_verify, **objects)
         mentions = templates.embed_mentions(embed)
         ping_reviewers = under_verify and (('ban' in self.type and 'give' in self.type) or 'warn' in self.type)
         if ping_reviewers:
             mentions += ' ' + ' '.join([role.mention for role in security.reviewers(guild)])
+        channel = self._log_channel(guild, fast=ping_reviewers)
         message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
