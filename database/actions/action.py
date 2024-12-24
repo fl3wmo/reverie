@@ -55,7 +55,7 @@ class Act:
         return data
 
     def _log_channel(self, guild: discord.Guild, fast: bool = False) -> discord.TextChannel:
-        search = _log_channels[_action_category(self.type)] if not fast else _log_channels[_action_category(self.type)]
+        search = _log_channels[_action_category(self.type, fast=fast)]
         for channel in guild.text_channels:
             if search in channel.name:
                 return channel
