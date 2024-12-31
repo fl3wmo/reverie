@@ -50,13 +50,45 @@ class MonthModeratorStats:
         return sum(stats.online_time for stats in self.dates.values())
 
     def format_stats(self) -> str:
-        return '\n'.join(
-            f'**``{".".join(list(reversed(date[2:].split("-"))))}``**: '
-            f'{stats.format_stats(short=True)}' for date, stats in sorted(
-                self.dates.items(),
-                key=lambda x: datetime.datetime.strptime(x[0], '%Y-%m-%d')
-            )
-        )
+        sorted_dates = sorted(self.dates.keys(), key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))
+        result = []
+
+        start_date = datetime.datetime.strptime(f"{datetime.datetime.now().year}-{datetime.datetime.now().month:02d}-01", '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(f"{datetime.datetime.now().year}-{datetime.datetime.now().month + 1:02d}-01", '%Y-%m-%d') - datetime.timedelta(days=1)
+
+        first_logged_date = datetime.datetime.strptime(sorted_dates[0], '%Y-%m-%d') if sorted_dates else None
+        if first_logged_date and (first_logged_date > start_date):
+            gap = (first_logged_date - start_date).days
+            for j in range(gap):
+                missing_date = (start_date + datetime.timedelta(days=j)).strftime('%Y-%m-%d')
+                formatted_date = ".".join(reversed(missing_date[2:].split("-")))
+                result.append(f"**``{formatted_date}``**: -#{j + 1} нет активности")
+
+        for i in range(len(sorted_dates)):
+            current_date = datetime.datetime.strptime(sorted_dates[i], '%Y-%m-%d')
+
+            if i > 0:
+                previous_date = datetime.datetime.strptime(sorted_dates[i - 1], '%Y-%m-%d')
+                gap = (current_date - previous_date).days - 1
+
+                if gap > 0:
+                    for j in range(1, gap + 1):
+                        missing_date = (previous_date + datetime.timedelta(days=j)).strftime('%Y-%m-%d')
+                        formatted_date = ".".join(reversed(missing_date[2:].split("-")))
+                        result.append(f"**``{formatted_date}``**: -#{j} нет активности")
+
+            formatted_date = ".".join(reversed(sorted_dates[i][2:].split("-")))
+            result.append(f'**``{formatted_date}``**: {self.dates[sorted_dates[i]].format_stats(short=True)}')
+
+        last_logged_date = datetime.datetime.strptime(sorted_dates[-1], '%Y-%m-%d') if sorted_dates else None
+        if last_logged_date and (last_logged_date < end_date):
+            gap = (end_date - last_logged_date).days
+            for j in range(gap):
+                missing_date = (last_logged_date + datetime.timedelta(days=j + 1)).strftime('%Y-%m-%d')
+                formatted_date = ".".join(reversed(missing_date[2:].split("-")))
+                result.append(f"**``{formatted_date}``**: -#{j + 1} нет активности")
+
+        return '\n'.join(result)
 
     def format_global_stats(self) -> str:
         return (
