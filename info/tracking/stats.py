@@ -49,7 +49,7 @@ class MonthModeratorStats:
         return sum(stats.online_time for stats in self.dates.values())
 
     def format_stats(self) -> str:
-        return '\n'.join(f'**{date}**: {stats.format_stats(short=True)}' for date, stats in self.dates.items())
+        return '\n'.join(f'**``{".".join(list(reversed(date[2:].split("-"))))}``**: {stats.format_stats(short=True)}' for date, stats in self.dates.items())
 
     def format_global_stats(self) -> str:
         return (
