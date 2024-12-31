@@ -29,7 +29,7 @@ async def month(interaction: discord.Interaction, current: str) -> list[app_comm
         months.append(app_commands.Choice(name=_date.strftime('%B (%Y)'), value=_date.strftime('%m.%Y')))
     for i in range(12):
         _date = datetime.date(today.year, i+1, 1)
-        if _date.month >= today.month:
+        if _date.month > today.month:
             break
 
         months.append(app_commands.Choice(name=_date.strftime('%B (%Y)'), value=_date.strftime('%m.%Y')))
