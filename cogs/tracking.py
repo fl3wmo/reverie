@@ -193,7 +193,8 @@ class TrackingCog(commands.GroupCog, name='tracking'):
         embed = discord.Embed(
             title=f'📆 Статистика за {month}',
             color=discord.Color.light_embed(),
-            description=f'### 🛠️ Действия {moderator.mention}\n\n{stats.format_stats()}'
+            description=f'### 🛠️ Действия {moderator.mention}\n\n{stats.format_stats()}',
+            timestamp=discord.utils.utcnow()
         )
         embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
         embed.set_footer(text='Информация обновлена')
