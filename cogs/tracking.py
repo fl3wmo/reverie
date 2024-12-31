@@ -166,6 +166,42 @@ class TrackingCog(commands.GroupCog, name='tracking'):
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    @app_commands.command(name='month', description='Посмотреть статистику за месяц')
+    @app_commands.rename(moderator='модератор', month='месяц')
+    @app_commands.describe(
+        moderator='Модератор, действия которого нужно посмотреть',
+        month='Месяц в формате mm.YYYY'
+    )
+    @app_commands.autocomplete(month=autocompletes.month)
+    @security.restricted(security.PermissionLevel.GMD)
+    async def month(
+            self,
+            interaction: discord.Interaction,
+            month: str,
+            moderator: discord.Member
+    ):
+        if not is_date_valid(month, '%m.%Y'):
+            raise ValueError('Неверный формат месяца. Формат: mm.YYYY.\nПример: 07.2077')
+
+        month_obj = datetime.strptime(month, '%m.%Y')
+        start_date = month_obj.replace(day=1)
+        end_date = (start_date + timedelta(days=33)).replace(day=1) - timedelta(days=1)
+
+        tracker = ModeratorTracker(interaction.guild)
+        stats = await tracker.get_stats(moderator.id, start_date, end_date, return_by_dates=True)
+
+        embed = discord.Embed(
+            title=f'📆 Статистика за {month}',
+            color=discord.Color.light_embed(),
+            description=f'### 🛠️ Действия {moderator.mention}\n\n{stats.format_stats()}'
+        )
+        embed.set_thumbnail(url='https://i.imgur.com/B1awIXx.png')
+        embed.set_footer(text='Информация обновлена')
+        embed.add_field(name='Общая статистика', value=stats.format_global_stats())
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
     @app_commands.command(name='day', description='Посмотреть статистику за день')
     @app_commands.rename(moderator='модератор', date='дата')
     @app_commands.describe(

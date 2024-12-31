@@ -59,9 +59,9 @@ def mashup_info(all_online, current_online, date):
     return all_online
 
 
-def is_date_valid(date: str):
+def is_date_valid(date: str, date_format: str = '%d.%m.%Y') -> bool:
     try:
-        datetime.datetime.strptime(date, '%d.%m.%Y')
+        datetime.datetime.strptime(date, date_format)
         return True
     except ValueError:
         return False
