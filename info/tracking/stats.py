@@ -57,7 +57,6 @@ class MonthModeratorStats:
 
         text = ''
         for day in date_range(start_date, end_date):
-            print(day)
             if day not in self.dates:
                 null_days += 1
             else:
