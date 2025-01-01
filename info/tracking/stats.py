@@ -52,11 +52,12 @@ class MonthModeratorStats:
 
     def format_stats(self) -> str:
         start_date = datetime.datetime.strptime(list(self.dates.keys())[0], '%Y-%m-%d').replace(day=1)
-        end_date = min((start_date + datetime.timedelta(days=31)).replace(day=1), datetime.datetime.now())
+        end_date = min((start_date + datetime.timedelta(days=31)).replace(day=1) - datetime.timedelta(days=1), datetime.datetime.now())
         null_days = 0
 
         text = ''
         for day in date_range(start_date, end_date):
+            print(day)
             if day not in self.dates:
                 null_days += 1
             else:
