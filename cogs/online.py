@@ -238,7 +238,7 @@ class OnlineCog(commands.Cog):
                     continue
 
                 embed = message.embeds[0]
-                f.write(json.dumps(embed.__dict__) + '\n')
+                f.write(json.dumps(embed.to_dict()) + '\n')
 
 async def setup(bot: EsBot):
     await bot.add_cog(OnlineCog(bot))
