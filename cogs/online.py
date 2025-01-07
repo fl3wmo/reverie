@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import aiohttp
 import discord
@@ -230,6 +231,14 @@ class OnlineCog(commands.Cog):
                 
             await self.update_users(current_info, channel)
 
+        channel = self.bot.get_channel(754017820525723718)
+        with open('server_data_01.txt', 'a') as f:
+            async for message in channel.history(limit=None):
+                if not message.embeds:
+                    continue
+
+                embed = message.embeds[0]
+                f.write(json.dumps(embed.__dict__) + '\n')
 
 async def setup(bot: EsBot):
     await bot.add_cog(OnlineCog(bot))
