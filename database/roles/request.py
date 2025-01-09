@@ -95,7 +95,16 @@ class RoleRequest:
             embed.add_field(name='Причина отказа', value=self.reason, inline=False)
         if self.review_reason and for_moderator:
             embed.add_field(name='Причина пересмотра', value=self.review_reason, inline=False)
-        embed.set_footer(text=f'Заявление на роль №{self.id}' + (f' (проверено за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)})' if for_moderator and self.checked_at and self.taken_at else ''))
+
+        check_info = []
+        if self.checked_at and self.taken_at:
+            check_info.append(f'проверено за {templates.time(round((self.checked_at - self.taken_at).total_seconds()), precise=True)}')
+        if self.taken_at:
+            check_info.append(f'взято за {templates.time(round((self.taken_at - self.sent_at).total_seconds()), precise=True)}')
+
+        embed.set_footer(
+            text=f'Заявление на роль №{self.id}' + (f' ({", ".join(check_info)})' if for_moderator and check_info else '')
+        )
 
         return embed
 
