@@ -21,7 +21,7 @@ class WarnInfo:
 
     @property
     def active_givens(self) -> int:
-        return len([given for given in self.givens if given + datetime.timedelta(days=30) > datetime.datetime.now(datetime.UTC)])
+        return len([given for given in self.givens if given.replace(tzinfo=datetime.UTC) + datetime.timedelta(days=30) > datetime.datetime.now(datetime.UTC)])
 
     @property
     def active_count(self) -> int:
@@ -66,7 +66,7 @@ class Warns:
             await self._collection.delete_one({'user': action.user, 'guild': action.guild})
         else:
             threshold_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=30)
-            first_valid_given = next((given for given in warn.givens if given >= threshold_date), None)
+            first_valid_given = next((given for given in warn.givens if given.replace(tzinfo=datetime.UTC) >= threshold_date), None)
 
             if first_valid_given:
                 await self._collection.update_one(
