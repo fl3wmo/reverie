@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 from dataclasses import dataclass, asdict
@@ -14,8 +15,17 @@ if typing.TYPE_CHECKING:
 class WarnInfo:
     user: int
     guild: int
-    count: int
+    count: int = 0
+    givens: list[datetime.datetime] = None
     _id: ObjectId = None
+
+    @property
+    def active_givens(self) -> int:
+        return len([given for given in self.givens if given + datetime.timedelta(days=30) > datetime.datetime.now(datetime.UTC)])
+
+    @property
+    def active_count(self) -> int:
+        return self.count + self.active_givens
 
     @property
     def as_dict(self):
@@ -41,21 +51,30 @@ class Warns:
         return WarnInfo(**doc)
 
     async def apply(self, action: 'Act') -> WarnInfo:
-        await self._collection.update_one({'user': action.user, 'guild': action.guild}, {'$inc': {'count': 1}}, upsert=True)
-        warn = [w for w in await self.get(action.user) if w.guild == action.guild][0]
-        if warn.count >= 3:
+        await self._collection.update_one({'user': action.user, 'guild': action.guild}, {'$push': {'givens': datetime.datetime.now(datetime.UTC)}}, upsert=True)
+        warn = await self.get_by_user_and_guild(action.user, action.guild)
+        if warn.active_count >= 3:
             await self._collection.delete_one({'user': action.user, 'guild': action.guild})
         return warn
 
-    async def apply_remove(self, action: 'Act') -> WarnInfo:
+    async def apply_remove(self, action: 'Act') -> None:
         warn = await self.get_by_user_and_guild(action.user, action.guild)
-        if warn.count <= 0:
+        if warn.active_count <= 0:
             raise ValueError('У пользователя нет предупреждений')
-        if warn.count == 1:
+
+        if warn.active_count == 1:
             await self._collection.delete_one({'user': action.user, 'guild': action.guild})
         else:
-            await self._collection.update_one({'user': action.user, 'guild': action.guild}, {'$inc': {'count': -1}})
-        return warn
+            threshold_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=30)
+            first_valid_given = next((given for given in warn.givens if given >= threshold_date), None)
+
+            if first_valid_given:
+                await self._collection.update_one(
+                    {'user': action.user, 'guild': action.guild},
+                    {'$pull': {'givens': first_valid_given}}
+                )
+            else:
+                raise ValueError('Нет предупреждений за последние 30 дней')
 
     async def give(
             self, *,
@@ -70,7 +89,7 @@ class Warns:
 
     async def remove(self, user: int, guild: int, moderator: int, auto_review: bool = False) -> 'Act':
         warn = await self.get_by_user_and_guild(user, guild)
-        if warn.count == 0:
+        if warn.active_count == 0:
             raise ValueError('У пользователя нет предупреждений')
 
         action = await self._actions.record(user, guild, moderator, 'warn_remove', counting=False, auto_review=auto_review)

@@ -24,7 +24,7 @@ class WarnsCog(commands.Cog, name='warn'):
         warn = await self.db.apply(action)
 
         guild = self.bot.get_guild(warn.guild)
-        if warn.count >= 3:
+        if warn.active_count >= 3:
             bans = self.bot.get_cog('ban')
             await bans.warns_end(interaction, user, guild, action)
         elif auto_kick:
