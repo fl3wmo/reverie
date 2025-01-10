@@ -31,6 +31,14 @@ class BansCog(commands.Cog, name='ban'):
         except:
             pass
 
+        user = await self.bot.getch_user(ban.user)
+        moderator = await self.bot.getch_member(self.bot.get_guild(ban.guild), action.moderator)
+
+        try:
+            await action.notify_user(user=user, moderator=moderator)
+        except:
+            pass
+
         guilds = [self.bot.get_guild(ban.guild)] if ban.type == 'local' else self.bot.guilds
         for guild in guilds:
             try:
@@ -68,7 +76,7 @@ class BansCog(commands.Cog, name='ban'):
             ban_type='global', duration=duration, reason=reason, auto_review=auto_review
         )
 
-        await templates.link_action(interaction, act, user=user, moderator=interaction.user)
+        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False)
 
         if auto_review:
             await self.on_approve(act.id)
@@ -112,7 +120,7 @@ class BansCog(commands.Cog, name='ban'):
             ban_type='local', duration=duration, reason=reason, auto_review=auto_review
         )
 
-        await templates.link_action(interaction, act, user=user, moderator=interaction.user)
+        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False)
 
         if auto_review:
             await self.on_approve(act.id)

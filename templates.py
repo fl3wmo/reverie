@@ -99,7 +99,7 @@ def embed_mentions(embed: discord.Embed) -> str:
     return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||' if groups else ''
 
 
-async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, **objects) -> None:
+async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, *, notify_user: bool = True, **objects) -> None:
     if screenshot:
         await interaction.response.send_message('### 📸 Скриншот сообщений\nОжидайте...', ephemeral=True)
     message = await act.log(interaction.guild, screenshot, target_message, db, **objects)
@@ -112,7 +112,8 @@ async def link_action(interaction: discord.Interaction, act, screenshot: list[di
             ephemeral=True
         )
 
-    await act.notify_user(**objects)
+    if notify_user:
+        await act.notify_user(**objects)
 
 
 async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError | str):
