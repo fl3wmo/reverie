@@ -164,7 +164,7 @@ class RolesCog(commands.Cog):
     @app_commands.describe(user='Пользователь, историю ролей которого нужно посмотреть')
     async def role_history(self, interaction: discord.Interaction, user: str):
         """Команда для просмотра истории ролей пользователя."""
-        member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
+        member, user = await self.bot.getch_any(interaction.guild, user)
         roles = await self.db.role_history(interaction.guild.id, user.id)
         if not roles:
             raise ValueError('У пользователя нет истории ролей')
