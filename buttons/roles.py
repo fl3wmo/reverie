@@ -73,7 +73,7 @@ class TakeRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:take:(
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         request = await db.roles.get_request_by_id(self.action_id)
         if not request or request.moderator:
-            raise ValueError('Заявление уже взято')
+            return await interaction.response.send_message('Запрос уже взят.', ephemeral=True)
 
         await db.roles.take_request(self.action_id, interaction.user.id)
         request.moderator = interaction.user.id

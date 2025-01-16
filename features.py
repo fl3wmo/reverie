@@ -153,5 +153,5 @@ class Pagination(discord.ui.View):
             await interaction.response.defer(ephemeral=True)
 
 
-def find_channel_by_name(guild: discord.Guild, *names: list[str]) -> discord.TextChannel:
+def find_channel_by_name(guild: discord.Guild, *names: str) -> discord.TextChannel:
     return [c for c in guild.text_channels if any(name in c.name for name in names)][0]

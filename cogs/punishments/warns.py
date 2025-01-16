@@ -52,6 +52,7 @@ class WarnsCog(commands.Cog, name='warn'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.SMD
+        need_proof = security.user_level(interaction.user) < security.PermissionLevel.GMD
         act = await self.db.give(
             user=user.id, guild=interaction.guild.id, moderator=interaction.user.id,
             reason=reason, auto_review=auto_review
@@ -60,7 +61,7 @@ class WarnsCog(commands.Cog, name='warn'):
         if auto_review:
             await self.on_approve(interaction, act.id, user=user, auto_kick=auto_kick)
 
-        await templates.link_action(interaction, act, user=user, moderator=interaction.user)
+        await templates.link_action(interaction, act, force_proof=need_proof, user=user, moderator=interaction.user)
 
     @app_commands.command(name='unwarn', description='Снять предупреждение с пользователя')
     @app_commands.default_permissions(manage_nicknames=True)

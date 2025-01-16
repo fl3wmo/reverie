@@ -103,7 +103,7 @@ class Act:
             embed.add_field(name='Причина', value=self.reason, inline=False)
         return embed
 
-    async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, **objects) -> discord.Message:
+    async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, force_proof: bool = False, **objects) -> discord.Message:
         under_verify = not self.reviewer
         embed = self.to_embed(under_verify=under_verify, **objects)
         mentions = templates.embed_mentions(embed)
@@ -114,10 +114,12 @@ class Act:
         message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
-        elif under_verify:
+        elif under_verify or force_proof:
             thread = await message.create_thread(name='Доказательства', auto_archive_duration=60)
-            if isinstance(self.moderator, discord.Member):
-                await thread.add_user(self.moderator)
+            try:
+                await thread.add_user(discord.Object(id=self.moderator))
+            except:
+                pass
         return message
 
     async def notify_user(self, specified_embed=None, **objects) -> None:

@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+import traceback
 from typing import Tuple
 
 import discord
@@ -99,10 +100,10 @@ def embed_mentions(embed: discord.Embed) -> str:
     return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||' if groups else ''
 
 
-async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, *, notify_user: bool = True, **objects) -> None:
+async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, force_proof: bool = False, *, notify_user: bool = True, **objects) -> None:
     if screenshot:
         await interaction.response.send_message('### 📸 Скриншот сообщений\nОжидайте...', ephemeral=True)
-    message = await act.log(interaction.guild, screenshot, target_message, db, **objects)
+    message = await act.log(interaction.guild, screenshot, target_message, db, force_proof=force_proof, **objects)
 
     if screenshot:
         await interaction.edit_original_response(content=f'## 🥳 Успех!\n[Действие]({message.jump_url}) успешно выполнено.', view=None)
@@ -117,25 +118,29 @@ async def link_action(interaction: discord.Interaction, act, screenshot: list[di
 
 
 async def on_tree_error(interaction: discord.Interaction, error: app_commands.AppCommandError | str):
-    if interaction.response.is_done():
-        print('Unhandled error:', error)
-    if isinstance(error, app_commands.CommandOnCooldown):
-        await interaction.response.send_message(
-            f"Команда ещё недоступна! Попробуйте ещё раз через **{error.retry_after:.2f}** сек!",
-            ephemeral=True
-        )
-    elif isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message("У вас нет прав", ephemeral=True)
-    elif isinstance(error, app_commands.CommandInvokeError) or isinstance(error, str):
-        embed = discord.Embed(
-            title='💀 Произошла ошибка',
-            description=str(error.original if isinstance(error, app_commands.CommandInvokeError) else error),
-            color=discord.Color.dark_grey()
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-    else:
-        logging.warning(f'Error: {error}')
-        await interaction.response.send_message("Произошла ошибка", ephemeral=True)
+    traceback_info = traceback.format_exc()
+    try:
+        if interaction.response.is_done():
+            print('Unhandled error:', traceback_info)
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(
+                f"Команда ещё недоступна! Попробуйте ещё раз через **{error.retry_after:.2f}** сек!",
+                ephemeral=True
+            )
+        elif isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("У вас нет прав", ephemeral=True)
+        elif isinstance(error, app_commands.CommandInvokeError) or isinstance(error, str):
+            embed = discord.Embed(
+                title='💀 Произошла ошибка',
+                description=str(error.original if isinstance(error, app_commands.CommandInvokeError) else error),
+                color=discord.Color.dark_grey()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            logging.warning(f'Error: {error}')
+            await interaction.response.send_message("Произошла ошибка", ephemeral=True)
+    except:
+        print('Unhandled error:', traceback_info)
 
 def user_notify_description(act, **objects):
     description = f'### Доброго времени суток, {objects['user'].mention}.\n'

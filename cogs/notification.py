@@ -102,8 +102,15 @@ class Notification(commands.Cog):
         embed.add_field(name='Пользователь', value=templates.user(notification.user))
         embed.set_footer(text='Время отправки уведомления')
 
-        await moderator.send(templates.embed_mentions(embed), embed=embed, view=send_notification(notification))
-            
+        channel = find_channel_by_name(guild, "чат-модерации", "чат-модераторов")
+        try:
+            await moderator.send(templates.embed_mentions(embed), embed=embed, view=send_notification(notification))
+        except discord.Forbidden:
+            await channel.send(
+                f'{templates.embed_mentions(embed)}\n-# {moderator.mention}, '
+                f'оповещения будут приходить в ЛС если вы откроете ЛС с ботом.',
+                embed=embed, view=send_notification(notification)
+            )
 
 async def setup(bot: EsBot):
     await bot.add_cog(Notification(bot))
