@@ -94,7 +94,7 @@ class Mutes:
 
         action = await self._actions.record(
             user, guild, moderator, f'mute_{mute_type}_give',
-            duration=duration, reason=reason, auto_review=True
+            duration=duration, reason=reason, auto_review=auto_review
         )
 
         mute = Mute(

@@ -43,12 +43,7 @@ class MutesCog(commands.Cog, name='mute'):
     unmute = app_commands.Group(name='unmute', description='Снять мут', default_permissions=discord.Permissions(manage_nicknames=True))
 
     async def mute_text_give(self, interaction: discord.Interaction, user: str | discord.Member | discord.User, duration: str, reason: str, *, screenshot: tuple[discord.Message, int] | None = None):
-        if isinstance(user, str):
-            member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
-        elif isinstance(user, discord.Member):
-            member = user
-        else:
-            member = None
+        member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
             await self.manage_mute_role(member, interaction.guild.id, 'text', 'add')
@@ -124,9 +119,10 @@ class MutesCog(commands.Cog, name='mute'):
         if member:
             await self.manage_mute_role(member, interaction.guild.id, 'voice', 'add')
 
+        auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
             user=user.id, guild=interaction.guild.id, moderator=interaction.user.id,
-            mute_type='voice', duration=duration, reason=reason
+            mute_type='voice', duration=duration, reason=reason, auto_review=auto_review
         )
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
@@ -170,9 +166,10 @@ class MutesCog(commands.Cog, name='mute'):
         if member:
             await self.manage_mute_role(member, interaction.guild.id, 'full', 'add')
 
+        auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
             user=user.id, guild=interaction.guild.id, moderator=interaction.user.id,
-            mute_type='full', duration=duration, reason=reason
+            mute_type='full', duration=duration, reason=reason, auto_review=auto_review
         )
 
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
