@@ -9,7 +9,6 @@ import features
 import security
 import templates
 
-
 type action = Literal[
     'role_approve', 'role_reject', 'role_remove',
     'warn_give', 'warn_remove',
@@ -32,6 +31,12 @@ _log_channels = {
     'punishments_fast': 'запрос-на-выдачу'
 }
 
+def gmd_indicator() -> discord.ui.View:
+    view = discord.ui.View()
+    view.add_item(
+        discord.ui.Button(label='Выдано от GMD+', emoji='\N{THUMBS UP SIGN}', style=discord.ButtonStyle.secondary,
+                          disabled=True))
+    return view
 
 @dataclass
 class Act:
@@ -117,7 +122,8 @@ class Act:
         if ping_reviewers:
             mentions += ' ' + ' '.join([role.mention for role in security.reviewers(guild)])
         channel = self._log_channel(guild, fast=ping_reviewers)
-        message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else None)
+        auto_review = self.reviewer == self.moderator and 'warn' not in self.type
+        message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else (None if not auto_review else gmd_indicator()))
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
         elif under_verify or force_proof:

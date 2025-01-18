@@ -53,9 +53,10 @@ class MutesCog(commands.Cog, name='mute'):
         if member:
             await self.manage_mute_role(member, interaction.guild.id, 'text', 'add')
 
+        auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
             user=user.id, guild=interaction.guild.id, moderator=interaction.user.id,
-            mute_type='text', duration=duration, reason=reason
+            mute_type='text', duration=duration, reason=reason, auto_review=auto_review
         )
 
         full_screenshot = None

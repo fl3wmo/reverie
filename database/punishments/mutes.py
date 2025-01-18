@@ -87,14 +87,14 @@ class Mutes:
     async def give(
         self, *,
         user: int, guild: int, moderator: int, mute_type: Literal['voice', 'text', 'full'],
-        duration: float, reason: str
+        duration: float, reason: str, auto_review: bool = False
     ) -> tuple['Act', Mute]:
         if await self._collection.count_documents({'user': user, 'type': mute_type, 'guild': guild}):
             raise ValueError('У пользователя уже есть мут на этом сервере')
 
         action = await self._actions.record(
             user, guild, moderator, f'mute_{mute_type}_give',
-            duration=duration, reason=reason
+            duration=duration, reason=reason, auto_review=True
         )
 
         mute = Mute(

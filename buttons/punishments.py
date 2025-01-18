@@ -72,7 +72,6 @@ class RejectPunishment(discord.ui.DynamicItem[discord.ui.Button], template='puni
         await interaction.message.edit(embed=embed, view=view)
         await interaction.response.defer(ephemeral=True)
 
-
 def punishment_review(action_id: int) -> discord.ui.View:
     view = discord.ui.View()
     view.add_item(ApprovePunishment(action_id))
