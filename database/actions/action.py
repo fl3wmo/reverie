@@ -97,7 +97,13 @@ class Act:
 
         if self.duration:
             embed.add_field(name='Длительность', value=templates.time(self.duration))
-        if self.prove_link:
+        if not for_moderator:
+            embed.add_field(
+                name='Время окончания',
+                value=templates.date(self.at + datetime.timedelta(seconds=self.duration), date_format='R'),
+                inline=True
+            )
+        if self.prove_link and for_moderator:
             embed.add_field(name='Доказательство', value=templates.link(self.prove_link), inline=False)
         if self.reason:
             embed.add_field(name='Причина', value=self.reason, inline=False)
