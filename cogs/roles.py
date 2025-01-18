@@ -85,7 +85,7 @@ class RolesCog(commands.Cog):
         embed = templates.role_requested(nickname, organization, f'[{rang}] {requested_role.rang_name(rang)}')
         await interaction.response.send_message(embed=embed, view=UnderReviewIndicator())
 
-        await self.update_message(interaction.channel, self.bot.command_ids.get('role', 0))
+        await self.update_message(interaction.channel, self.bot.command_ids.get('role', 0), self.bot.command_ids.get('role-remove', 0))
 
         roles = get_organization_roles(interaction.user)
         for role in roles:
@@ -118,12 +118,12 @@ class RolesCog(commands.Cog):
         await asyncio.sleep(300)
         await reminder(message, request.id)
 
-    async def update_message(self, channel: discord.TextChannel, command_id: int) -> discord.Message:
+    async def update_message(self, channel: discord.TextChannel, command_id: int, remove_command_id) -> discord.Message:
         """Обновление сообщения в канале заявок на роли."""
         async for message in channel.history(limit=5):
             if message.author.id == self.bot.user.id and not message.embeds:
                 await message.delete()
-        return await message.channel.send(templates.role_requests(command_id))
+        return await channel.send(templates.role_requests(command_id, remove_command_id))
 
     @app_commands.command(name='role', description='Подать заявление на роль')
     @app_commands.rename(nickname='никнейм', organization='организация', rang='ранг', photo_proof='скриншот-статистики',
