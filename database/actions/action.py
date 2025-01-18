@@ -120,7 +120,7 @@ class Act:
         return embed
 
     async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None,
-                  target_message: discord.Message | None = None, db=None, force_proof: bool = False,
+                  target_message: discord.Message | None = None, db=None, force_proof: bool = False, auto_review: bool = False,
                   **objects) -> discord.Message:
         under_verify = not self.reviewer
         embed = self.to_embed(under_verify=under_verify, **objects)
@@ -129,7 +129,7 @@ class Act:
         if ping_reviewers:
             mentions += ' ' + ' '.join([role.mention for role in security.reviewers(guild)])
         channel = self._log_channel(guild, fast=ping_reviewers)
-        auto_review = self.reviewer == self.moderator and 'warn' not in self.type
+
         message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(
             self.id) if not self.reviewer else (None if not auto_review else gmd_indicator()))
         if screenshot:

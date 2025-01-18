@@ -64,7 +64,7 @@ class MutesCog(commands.Cog, name='mute'):
             full_screenshot = [mess async for mess in screenshot[0].channel.history(around=screenshot[0], limit=screenshot[1])]
         else:
             screenshot = (None, 0)
-        await templates.link_action(interaction, act, full_screenshot, screenshot[0], db, user=user, moderator=interaction.user)
+        await templates.link_action(interaction, act, full_screenshot, screenshot[0], db, user=user, moderator=interaction.user, auto_review=auto_review)
 
     @mute.command(name='text', description='Замутить пользователя в текстовых каналах')
     @app_commands.default_permissions(manage_nicknames=True)

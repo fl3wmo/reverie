@@ -100,10 +100,10 @@ def embed_mentions(embed: discord.Embed) -> str:
     return '-# ||' + ', '.join([f'<@{m}>' for m in groups]) + '||' if groups else ''
 
 
-async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, force_proof: bool = False, *, notify_user: bool = True, **objects) -> None:
+async def link_action(interaction: discord.Interaction, act, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, force_proof: bool = False, *, notify_user: bool = True, auto_review: bool = False, **objects) -> None:
     if screenshot:
         await interaction.response.send_message('### 📸 Скриншот сообщений\nОжидайте...', ephemeral=True)
-    message = await act.log(interaction.guild, screenshot, target_message, db, force_proof=force_proof, **objects)
+    message = await act.log(interaction.guild, screenshot, target_message, db, force_proof=force_proof, auto_review=auto_review, **objects)
 
     if screenshot:
         await interaction.edit_original_response(content=f'## 🥳 Успех!\n[Действие]({message.jump_url}) успешно выполнено.', view=None)
