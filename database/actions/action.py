@@ -21,6 +21,7 @@ type action = Literal[
     'temp_mute_give', 'temp_mute_remove',
 ]
 
+
 def _action_category(action_type: action, fast: bool = False) -> str:
     return 'roles' if 'role' in action_type else 'punishments' if not fast else 'punishments_fast'
 
@@ -31,12 +32,14 @@ _log_channels = {
     'punishments_fast': 'запрос-на-выдачу'
 }
 
+
 def gmd_indicator() -> discord.ui.View:
     view = discord.ui.View()
     view.add_item(
         discord.ui.Button(label='Выдано от GMD+', emoji='\N{THUMBS UP SIGN}', style=discord.ButtonStyle.secondary,
                           disabled=True))
     return view
+
 
 @dataclass
 class Act:
@@ -80,7 +83,6 @@ class Act:
             text += f'> -# Акт: {self.id}. Модератор: {templates.user(self.moderator)}'
         return text
 
-
     def to_embed(self, under_verify: bool, *, for_moderator: bool = True, **objects) -> discord.Embed:
         embed = discord.Embed(
             title=templates.action(self.type),
@@ -92,17 +94,20 @@ class Act:
             embed.add_field(name='Пользователь', value=templates.user(objects.get('user', self.user)))
         else:
             embed.description = templates.user_notify_description(self, **objects)
-            embed.set_author(name='Уведомление из: ' + objects['moderator'].guild.name, icon_url=objects['moderator'].guild.icon.url)
+            embed.set_author(name='Уведомление из: ' + objects['moderator'].guild.name,
+                             icon_url=objects['moderator'].guild.icon.url)
 
-        embed.add_field(name='Модератор', value=templates.user(objects.get('moderator', self.moderator), dm=not for_moderator))
+        embed.add_field(name='Модератор',
+                        value=templates.user(objects.get('moderator', self.moderator), dm=not for_moderator))
         embed.set_footer(text=f'Акт №{self.id}')
 
         if self.reviewer and self.reviewer != self.moderator:
-            embed.add_field(name='Проверяющий', value=templates.user(objects.get('reviewer', self.reviewer), dm=not for_moderator))
+            embed.add_field(name='Проверяющий',
+                            value=templates.user(objects.get('reviewer', self.reviewer), dm=not for_moderator))
 
         if self.duration:
             embed.add_field(name='Длительность', value=templates.time(self.duration))
-        if not for_moderator:
+        if not for_moderator and self.duration:
             embed.add_field(
                 name='Время окончания',
                 value=templates.date(self.at + datetime.timedelta(seconds=self.duration), date_format='R'),
@@ -114,7 +119,9 @@ class Act:
             embed.add_field(name='Причина', value=self.reason, inline=False)
         return embed
 
-    async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None, target_message: discord.Message | None = None, db = None, force_proof: bool = False, **objects) -> discord.Message:
+    async def log(self, guild: discord.Guild, screenshot: list[discord.Message] | None = None,
+                  target_message: discord.Message | None = None, db=None, force_proof: bool = False,
+                  **objects) -> discord.Message:
         under_verify = not self.reviewer
         embed = self.to_embed(under_verify=under_verify, **objects)
         mentions = templates.embed_mentions(embed)
@@ -123,7 +130,8 @@ class Act:
             mentions += ' ' + ' '.join([role.mention for role in security.reviewers(guild)])
         channel = self._log_channel(guild, fast=ping_reviewers)
         auto_review = self.reviewer == self.moderator and 'warn' not in self.type
-        message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(self.id) if not self.reviewer else (None if not auto_review else gmd_indicator()))
+        message: discord.Message = await channel.send(mentions, embed=embed, view=buttons.punishment_review(
+            self.id) if not self.reviewer else (None if not auto_review else gmd_indicator()))
         if screenshot:
             await features.screenshot_messages(message, target_message, screenshot, action_id=self.id, db=db)
         elif under_verify or force_proof:
