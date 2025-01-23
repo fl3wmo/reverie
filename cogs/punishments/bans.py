@@ -76,7 +76,7 @@ class BansCog(commands.Cog, name='ban'):
             ban_type='global', duration=duration, reason=reason, auto_review=auto_review
         )
 
-        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False)
+        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False, auto_review=auto_review)
 
         if auto_review:
             await self.on_approve(act.id)
@@ -120,7 +120,7 @@ class BansCog(commands.Cog, name='ban'):
             ban_type='local', duration=duration, reason=reason, auto_review=auto_review
         )
 
-        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False)
+        await templates.link_action(interaction, act, user=user, moderator=interaction.user, notify_user=False, auto_review=auto_review)
 
         if auto_review:
             await self.on_approve(act.id)
