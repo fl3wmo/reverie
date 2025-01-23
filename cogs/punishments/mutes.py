@@ -10,6 +10,7 @@ import templates
 import validation
 from bot import EsBot
 from database import db
+from templates import on_tree_error
 
 
 class MutesModal(discord.ui.Modal, title='Выдача текстового мута'):
@@ -46,7 +47,10 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'text', 'add')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'text', 'add')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
@@ -93,7 +97,11 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'text', 'remove')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'text', 'remove')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
+
         act = await self.db.remove(user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='text',
                                    auto_review=security.user_level(interaction.user) > security.PermissionLevel.GMD)
         
@@ -117,7 +125,10 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'voice', 'add')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'voice', 'add')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
@@ -137,7 +148,10 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'voice', 'remove')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'voice', 'remove')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
 
         act = await self.db.remove(
             user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='voice',
@@ -164,7 +178,10 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'full', 'add')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'full', 'add')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
 
         auto_review = security.user_level(interaction.user) >= security.PermissionLevel.GMD
         act, mute = await self.db.give(
@@ -184,7 +201,10 @@ class MutesCog(commands.Cog, name='mute'):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)
 
         if member:
-            await self.manage_mute_role(member, interaction.guild.id, 'full', 'remove')
+            try:
+                await self.manage_mute_role(member, interaction.guild.id, 'full', 'remove')
+            except ValueError as e:
+                return await on_tree_error(interaction, str(e))
 
         act = await self.db.remove(
             user=user.id, moderator=interaction.user.id, guild=interaction.guild.id, mute_type='full',

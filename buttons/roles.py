@@ -9,6 +9,7 @@ import security
 import templates
 from database import db
 from database.roles.request import RequestStatus, RoleRequest
+from templates import on_tree_error
 
 
 class UnderReviewIndicator(discord.ui.View):
@@ -100,7 +101,10 @@ class ApproveRole(discord.ui.DynamicItem[discord.ui.Button], template='roles:app
 
     @security.restricted(security.PermissionLevel.MD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
-        await db.roles.check_request(interaction.user.id, self.handler.action_id, True)
+        try:
+            await db.roles.check_request(interaction.user.id, self.handler.action_id, True)
+        except ValueError as e:
+            return await on_tree_error(interaction, str(e))
         request = await db.roles.get_request_by_id(self.handler.action_id)
         await self.handler.edit_interaction_message(interaction, request)
         await self.handler.update_status_message(interaction, request)
@@ -131,7 +135,12 @@ class RejectRole(discord.ui.DynamicItem[discord.ui.Select], template='roles:reje
         selected_options = interaction.data['values']
         reasons = [f'**{v[0]} {k}**\n{v[1]}' for k, v in db.roles.reasons_dict.items() if k in selected_options]
         reason = '\n\n'.join(reasons)
-        await db.roles.check_request(interaction.user.id, self.handler.action_id, False, reason)
+
+        try:
+            await db.roles.check_request(interaction.user.id, self.handler.action_id, False, reason)
+        except ValueError as e:
+            return await on_tree_error(interaction, str(e))
+
         request = await db.roles.get_request_by_id(self.handler.action_id)
         await self.handler.edit_interaction_message(interaction, request)
         await self.handler.update_status_message(interaction, request)
