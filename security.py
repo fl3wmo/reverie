@@ -35,7 +35,10 @@ def _moderator_info(user: discord.Member | discord.User) -> tuple[int, tuple[str
     for level, moderator_role in reversed(_moderator_levels.items()):
         if any(moderator_role[1] in role.name for role in user.roles):
             return level, moderator_role
-    
+
+    if user.guild_permissions.administrator:
+        return 8, ('A+', 'Суперпользователь')
+
     return 0, ('', '')
 
 
