@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import discord
@@ -60,16 +60,16 @@ class ModeratorTracker:
                 date_stats.setdefault(date, {})['online_time'] = info.total_seconds
 
             for action in punishments:
-                date = action.at.strftime('%Y-%m-%d')
+                date = (action.at + timedelta(hours=3)).strftime('%Y-%m-%d')
                 date_stats.setdefault(date, {}).setdefault('punishments', {}).setdefault(action.type, []).append(action)
 
             for role in roles_give:
-                date = role.checked_at.strftime('%Y-%m-%d')
+                date = (role.checked_at + timedelta(hours=3)).strftime('%Y-%m-%d')
                 key = 'Одобрено' if role.approved else 'Отклонено'
                 date_stats.setdefault(date, {}).setdefault('roles', {}).setdefault(key, []).append(role)
 
             for role in roles_remove:
-                date = role.at.strftime('%Y-%m-%d')
+                date = (role.at + timedelta(hours=3)).strftime('%Y-%m-%d')
                 date_stats.setdefault(date, {}).setdefault('roles', {}).setdefault('Снято', []).append(role)
 
             return MonthModeratorStats(

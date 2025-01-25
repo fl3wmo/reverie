@@ -31,6 +31,8 @@ class Actions:
             query['guild'] = guild
         if date_from:
             date_from = date_from.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
+            if date_to:
+                date_to = date_to.replace(hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(hours=3)
             query['at'] = {'$gte': date_from, '$lt': (date_from + datetime.timedelta(days=1) if not date_to else date_to)}
         if counting:
             query['counting'] = True
