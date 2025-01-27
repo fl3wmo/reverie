@@ -29,7 +29,6 @@ class ApprovePunishment(discord.ui.DynamicItem[discord.ui.Button], template='pun
     @security.restricted(security.PermissionLevel.GMD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         embed = interaction.message.embeds[0]
-        embed.colour = discord.Color.green()
 
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label=interaction.user.display_name, emoji='\N{THUMBS UP SIGN}', disabled=True))
@@ -60,7 +59,6 @@ class RejectPunishment(discord.ui.DynamicItem[discord.ui.Button], template='puni
     @security.restricted(security.PermissionLevel.GMD)
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         embed = interaction.message.embeds[0]
-        embed.colour = discord.Color.red()
 
         view = discord.ui.View()
         view.add_item(
