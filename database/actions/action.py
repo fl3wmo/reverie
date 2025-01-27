@@ -84,9 +84,24 @@ class Act:
         return text
 
     def to_embed(self, under_verify: bool, *, for_moderator: bool = True, **objects) -> discord.Embed:
+        colors = {
+            'warn': discord.Color.blue(),
+            'mute_voice': discord.Color.dark_orange(),
+            'mute_text': discord.Color.orange(),
+            'mute_full': discord.Color.light_embed(),
+            'ban_local': discord.Color.red(),
+            'ban_global': discord.Color.dark_red(),
+            'hide': discord.Color.dark_gold(),
+        }
+        embed_color = [c for c in colors if c in self.type]
+        if not embed_color:
+            embed_color = discord.Color.random()
+        else:
+            embed_color = colors[embed_color[0]]
+
         embed = discord.Embed(
             title=templates.action(self.type),
-            color=discord.Color.gold() if under_verify else discord.Color.random(),
+            color=discord.Color.gold() if under_verify else embed_color,
             timestamp=self.at.replace(tzinfo=datetime.UTC)
         )
 
