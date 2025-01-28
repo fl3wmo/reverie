@@ -80,10 +80,10 @@ reason_hints = {
 
 def hints_to_definitions(reason: str) -> str:
     for category, hints in reason_hints.items():
-        for hint in hints:
+        for hint, definition in hints.items():
             hint_string = f'{category}: {hint}'
             if hint_string in reason:
-                reason = reason.replace(hint_string, category)
+                reason = reason.replace(hint_string, definition)
     return reason
 
 
