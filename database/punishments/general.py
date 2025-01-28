@@ -80,11 +80,13 @@ class Punishments:
             include_categories: Optional[list[str]] = None,
             escalated_categories: Optional[list[str]] = None
     ) -> list[app_commands.Choice[str]]:
+        reason_history = []
         if interaction.namespace.__contains__('пользователь'):
-            user_id = validation.user_id(interaction.namespace['пользователь'])
-            reason_history = list(await self.actions.reasons_history(user_id=user_id, guild_id=interaction.guild.id))
-        else:
-            reason_history = []
+            try:
+                user_id = validation.user_id(interaction.namespace['пользователь'])
+                reason_history = list(await self.actions.reasons_history(user_id=user_id, guild_id=interaction.guild.id))
+            except ValueError:
+                pass
 
         categories = self._get_filtered_categories(exclude_categories, include_categories)
         stripped_current = current.strip()
