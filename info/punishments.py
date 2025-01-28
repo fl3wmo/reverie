@@ -77,5 +77,15 @@ reason_hints = {
     }
 }
 
+
+def hints_to_definitions(reason: str) -> str:
+    for category, hints in reason_hints.items():
+        for hint in hints:
+            hint_string = f'{category}: {hint}'
+            if hint_string in reason:
+                reason = reason.replace(hint_string, category)
+    return reason
+
+
 profile_reasons = ("ава", "ник", "статус", "обо мне", "местоимение")
 tags = ('рецидив', 'заувал.', 'перевыдача')
