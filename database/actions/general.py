@@ -5,6 +5,7 @@ import discord
 from motor.motor_asyncio import AsyncIOMotorCollection as MotorCollection
 
 from database.actions.action import Act, action
+from info.punishments import hints_to_definitions
 
 if typing.TYPE_CHECKING:
     from bot import EsBot
@@ -47,6 +48,7 @@ class Actions:
     ) -> Act:
         if reason and 'not_pick' in reason:
             raise ValueError('### Вы ввели некорректную причину.\nВозможно, вы нажали не туда?\n-# Не нажимайте на названия категорий\n-# Попробуйте **ввести название категории** вручную и тогда **выбрать из предложенных**.')
+        reason = hints_to_definitions(reason)
 
         act_id = (await self._collection.count_documents({})) + 1
         act = Act(
