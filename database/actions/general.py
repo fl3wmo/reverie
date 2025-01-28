@@ -62,7 +62,8 @@ class Actions:
 
         if 'role' not in action_type and 'remove' in action_type:
             last_act = await self.last_act(user, guild, str(action_type).replace('remove', 'give'))
-            await self.deactivate(last_act.id, moderator)
+            if last_act:
+                await self.deactivate(last_act.id, moderator)
 
         act_id = (await self._collection.count_documents({})) + 1
         act = Act(
@@ -84,8 +85,11 @@ class Actions:
     async def set_prove_link(self, act_id: int, link: str) -> None:
         await self._collection.update_one({'id': act_id}, {'$set': {'prove_link': link}})
 
-    async def last_act(self, user: int, guild: int, action_type: action) -> Act:
-        return Act(**await self._collection.find_one({'user': user, 'guild': guild, 'type': action_type, 'counting': True}, sort=[('id', -1)]))
+    async def last_act(self, user: int, guild: int, action_type: action) -> Act | None:
+        act = await self._collection.find_one({'user': user, 'guild': guild, 'type': action_type, 'counting': True}, sort=[('id', -1)])
+        if act is None:
+            return None
+        return Act(**act)
 
     async def deactivate(self, act_id: int, reviewer: int) -> None:
         act = await self.get(act_id)
