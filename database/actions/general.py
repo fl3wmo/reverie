@@ -57,8 +57,8 @@ class Actions:
                 '### Вы ввели некорректную причину.\nВозможно, вы нажали не туда?\n-# Не нажимайте на названия категорий\n-# Попробуйте **ввести название категории** вручную и тогда **выбрать из предложенных**.')
         if reason:
             reason = hints_to_definitions(reason)
-        if (guild, user) in self.reasons_cache:
-            self.reasons_cache[(guild, user)].append(reason)
+            if (guild, user) in self.reasons_cache:
+                self.reasons_cache[(guild, user)].append(reason)
 
         if 'role' not in action_type and 'remove' in action_type:
             last_act = await self.last_act(user, guild, str(action_type).replace('remove', 'give'))
