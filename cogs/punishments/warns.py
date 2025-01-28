@@ -45,7 +45,7 @@ class WarnsCog(commands.Cog, name='warn'):
         reason='Причина блокировки',
         auto_kick='Кикнуть пользователя'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.warns_autocomplete)
     @security.restricted(security.PermissionLevel.MD)
     async def warn_give(self, interaction: discord.Interaction, user: str,
                         reason: app_commands.Range[str, 1, 512], auto_kick: bool = True):

@@ -45,6 +45,9 @@ class Actions:
             reason: str = None, prove_link: str = None,
             auto_review: bool = False
     ) -> Act:
+        if reason and 'not_pick' in reason:
+            raise ValueError('### Вы ввели некорректную причину.\nВозможно, вы нажали не туда?\n-# Не нажимайте на названия категорий\n-# Попробуйте **ввести название категории** вручную и тогда **выбрать из предложенных**.')
+
         act_id = (await self._collection.count_documents({})) + 1
         act = Act(
             id=act_id,

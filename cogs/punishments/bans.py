@@ -63,7 +63,7 @@ class BansCog(commands.Cog, name='ban'):
         duration='Длительность в формате dF. Примеры: 1с, 1м, 1ч',
         reason='Причина блокировки'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.bans_autocomplete)
     @validation.duration_formatter(default_unit="д")
     @security.restricted(security.PermissionLevel.CUR)
     async def ban_global(self, interaction: discord.Interaction, user: str, duration: str,
@@ -107,7 +107,7 @@ class BansCog(commands.Cog, name='ban'):
         duration='Длительность в формате dF. Примеры: 1с, 1м, 1ч',
         reason='Причина блокировки'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.bans_autocomplete)
     @validation.duration_formatter(default_unit="д")
     @security.restricted(security.PermissionLevel.MD)
     async def ban_local(self, interaction: discord.Interaction, user: str, duration: str,

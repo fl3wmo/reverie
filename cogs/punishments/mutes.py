@@ -73,7 +73,7 @@ class MutesCog(commands.Cog, name='mute'):
         duration='Длительность в формате dF. Примеры: 1с, 1м, 1ч',
         reason='Причина мута'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.text_mutes_autocomplete)
     @validation.duration_formatter()
     @security.restricted(security.PermissionLevel.MD)
     async def mute_text(self, interaction: discord.Interaction, user: str, duration: str,
@@ -115,7 +115,7 @@ class MutesCog(commands.Cog, name='mute'):
         duration='Длительность в формате dF. Примеры: 1с, 1м, 1ч',
         reason='Причина мута'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.voice_mutes_autocomplete)
     @validation.duration_formatter()
     @security.restricted(security.PermissionLevel.MD)
     async def mute_voice(
@@ -168,7 +168,7 @@ class MutesCog(commands.Cog, name='mute'):
         duration='Длительность в формате dF. Примеры: 1с, 1м, 1ч',
         reason='Причина мута'
     )
-    @app_commands.autocomplete(reason=db.punishments.reasons_autocomplete)
+    @app_commands.autocomplete(reason=db.punishments.bans_autocomplete)
     @validation.duration_formatter()
     @security.restricted(security.PermissionLevel.MD)
     async def mute_full(
