@@ -74,14 +74,15 @@ class Punishments:
         if not stripped_current:
             base_choices = [
                app_commands.Choice(
-                   name="Доступные категории: (введите вручную одну из них)",
+                   name="Доступные категории: (введите вручную одну из них, и вам выпадет список причин по ним)",
                    value='not_pick'
                )
             ] + [
                app_commands.Choice(name=cat, value=f'not_pick:{cat}')
                for cat in categories
             ]
-            return base_choices + self._generate_choices(escalated_categories)
+            escalated_choices = self._generate_choices(escalated_categories)
+            return base_choices + ([app_commands.Choice(name='Быстрые наказания: (нужно нажимать, после отправки они автоматически заменятся на полную причину)', value="not_pick_hint")] if escalated_choices else []) + escalated_choices
 
         picked_categories = self._get_picked_categories(stripped_current, categories)
         if picked_categories:

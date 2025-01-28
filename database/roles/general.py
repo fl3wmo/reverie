@@ -1,5 +1,7 @@
 import typing
 import datetime
+from functools import lru_cache
+
 from motor.motor_asyncio import AsyncIOMotorClient as MotorClient
 
 from database.roles.remove import RolesRemove
@@ -22,7 +24,9 @@ class Roles:
             "Не в организации": ('🧑‍💼', "На скриншоте не видно док-в пребывания в указанной организации."),
             "Никнейм": ('📛', "На скриншоте не совпадает никнейм с указанным."),
             "Несовпадение ID": ('🆔', "ID на скриншотах не совпадает."),
+            "Два скриншота с ПК": ('💻', "Разделять скриншоты /mn и /c 60 можно только с Hassle (мобайл)."),
         }
+        self.nicknames_cache: dict[int, list[str]] = {}
 
     async def get_request(self, user: int, guild: int) -> RoleRequest | None:
         result = await self._col.find_one({'user': user, 'guild': guild, 'checked_at': None})
@@ -49,8 +53,14 @@ class Roles:
         await self._col.update_one({'id': request_id}, {'$set': {'moderator': moderator, 'taken_at': datetime.datetime.now(datetime.timezone.utc)}})
 
     async def check_request(self, moderator: int, request_id: int, approve: bool, reason: str = None) -> None:
-        if moderator != (await self.get_request_by_id(request_id)).moderator:
+        request = await self.get_request_by_id(request_id)
+        if moderator != request.moderator:
             raise ValueError('Заявлением занимается другой модератор')
+        if request.user in self.nicknames_cache:
+            self.nicknames_cache[request.user].append(request.nickname)
+        else:
+            self.nicknames_cache[request.user] = [request.nickname]
+
         await self._col.update_one(
             {'id': request_id},
             {'$set': {
@@ -92,4 +102,9 @@ class Roles:
 
     async def role_history(self, guild: int, user: int) -> list[RoleRequest]:
         return [RoleRequest(**doc) async for doc in self._col.find({'guild': guild, 'user': user})]
-    
+
+    async def nickname_history(self, guild: int, user: int) -> list[str]:
+        if user in self.nicknames_cache:
+            return self.nicknames_cache[user]
+        self.nicknames_cache[user] = list(set(await self._col.distinct('nickname', {'guild': guild, 'user': user})))
+        return self.nicknames_cache[user]

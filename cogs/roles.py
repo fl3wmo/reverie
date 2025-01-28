@@ -19,11 +19,13 @@ def get_organization_roles(member: discord.Member) -> list[RoleInfo]:
     """Получение ролей организации у пользователя."""
     return [role for role in role_info.values() if role.find(member.roles)]
 
+
 class ActionInfo(NamedTuple):
     action_text: str
 
     def to_text(self, index: int) -> str:
         return f'### {index}. {self.action_text}'
+
 
 class RolesCog(commands.Cog):
     def __init__(self, bot: EsBot):
@@ -43,8 +45,14 @@ class RolesCog(commands.Cog):
         if not role:
             return []
 
-        ranks = [(current, role.rangs[current - 1])] if current and len(role.rangs) >= current >= 1 else enumerate(role.rangs, 1)
+        ranks = [(current, role.rangs[current - 1])] if current and len(role.rangs) >= current >= 1 else enumerate(
+            role.rangs, 1)
         return [app_commands.Choice(name=f'[{v}] {k}', value=v) for v, k in ranks]
+
+    async def nickname_callback(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        nicknames = await self.db.nickname_history(interaction.guild.id, interaction.user.id)
+        return [app_commands.Choice(name=nickname, value=nickname.replace(' ', '_')) for nickname in nicknames if
+                not current.strip() or nickname.lower().startswith(current.lower().strip())][:25]
 
     def requests_channel(self, guild: discord.Guild) -> discord.TextChannel:
         return find_channel_by_name(guild, 'запрос-роли')
@@ -74,18 +82,23 @@ class RolesCog(commands.Cog):
 
         return nickname, requested_role
 
-    async def handle_existing_role(self, interaction: discord.Interaction, requested_role, rang: int, nickname: str) -> None:
+    async def handle_existing_role(self, interaction: discord.Interaction, requested_role, rang: int,
+                                   nickname: str) -> None:
         """Обработка ситуации, когда у пользователя уже есть роль."""
-        await interaction.response.send_message('## Успех ✅\nВаш никнейм изменён на соответствующий вашей должности.', ephemeral=True)
+        await interaction.response.send_message('## Успех ✅\nВаш никнейм изменён на соответствующий вашей должности.',
+                                                ephemeral=True)
         await interaction.user.edit(nick=requested_role.form_nickname(rang, nickname))
 
-    async def handle_new_role_request(self, interaction: discord.Interaction, nickname: str, organization: str, rang: int,
-                                      requested_role, photo_proof: discord.Attachment, photo_additional: discord.Attachment = None) -> None:
+    async def handle_new_role_request(self, interaction: discord.Interaction, nickname: str, organization: str,
+                                      rang: int,
+                                      requested_role, photo_proof: discord.Attachment,
+                                      photo_additional: discord.Attachment = None) -> None:
         """Обработка новой заявки на роль."""
         embed = templates.role_requested(nickname, organization, f'[{rang}] {requested_role.rang_name(rang)}')
         await interaction.response.send_message(embed=embed, view=UnderReviewIndicator())
 
-        await self.update_message(interaction.channel, self.bot.command_ids.get('role', 0), self.bot.command_ids.get('role-remove', 0))
+        await self.update_message(interaction.channel, self.bot.command_ids.get('role', 0),
+                                  self.bot.command_ids.get('role-remove', 0))
 
         roles = get_organization_roles(interaction.user)
         for role in roles:
@@ -103,7 +116,8 @@ class RolesCog(commands.Cog):
         files = [await photo_proof.to_file()]
         if photo_additional:
             files.append(await photo_additional.to_file())
-        message = await self.moderator_channel(interaction.guild).send(content=templates.embed_mentions(embed), embed=embed, view=request.to_view(), files=files)
+        message = await self.moderator_channel(interaction.guild).send(content=templates.embed_mentions(embed),
+                                                                       embed=embed, view=request.to_view(), files=files)
 
         async def reminder(moderators_message, request_id):
             old_request = await self.db.get_request_by_id(request_id)
@@ -136,17 +150,19 @@ class RolesCog(commands.Cog):
         photo_additional='Дополнительный скриншот для игроков Hassle'
     )
     @app_commands.choices(organization=[app_commands.Choice(name=role, value=role) for role in role_info.keys()])
-    @app_commands.autocomplete(rang=rang_callback)
+    @app_commands.autocomplete(rang=rang_callback, nickname=nickname_callback)
     async def request_role(self, interaction: discord.Interaction, nickname: app_commands.Range[str, 3, 19],
                            organization: app_commands.Choice[str], rang: app_commands.Range[int, 1, 8],
                            photo_proof: discord.Attachment, photo_additional: discord.Attachment = None):
         """Основная команда для подачи заявления на роль."""
-        nickname, requested_role = await self.validate_role_request(interaction, nickname, organization.value, rang, photo_proof)
+        nickname, requested_role = await self.validate_role_request(interaction, nickname, organization.value, rang,
+                                                                    photo_proof)
 
         if requested_role.find(interaction.user.roles):
             await self.handle_existing_role(interaction, requested_role, rang, nickname)
         else:
-            await self.handle_new_role_request(interaction, nickname, organization.value, rang, requested_role, photo_proof, photo_additional)
+            await self.handle_new_role_request(interaction, nickname, organization.value, rang, requested_role,
+                                               photo_proof, photo_additional)
 
     @app_commands.command(name='role-remove', description='Снять роль фракции')
     async def remove_role(self, interaction: discord.Interaction):
@@ -177,7 +193,7 @@ class RolesCog(commands.Cog):
             page_size=5,
             embed_title="История ролей",
         )
-        
+
         await paginator.send_initial_message()
 
     @app_commands.command(name='role-info', description='Информация о роли')
