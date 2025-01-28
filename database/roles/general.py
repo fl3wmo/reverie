@@ -26,7 +26,7 @@ class Roles:
             "Несовпадение ID": ('🆔', "ID на скриншотах не совпадает."),
             "Два скриншота с ПК": ('💻', "Разделять скриншоты /mn и /c 60 можно только с Hassle (мобайл)."),
         }
-        self.nicknames_cache: dict[int, list[str]] = {}
+        self.nicknames_cache: dict[(int, int), list[str]] = {}
 
     async def get_request(self, user: int, guild: int) -> RoleRequest | None:
         result = await self._col.find_one({'user': user, 'guild': guild, 'checked_at': None})
@@ -56,10 +56,10 @@ class Roles:
         request = await self.get_request_by_id(request_id)
         if moderator != request.moderator:
             raise ValueError('Заявлением занимается другой модератор')
-        if request.user in self.nicknames_cache:
-            self.nicknames_cache[request.user].append(request.nickname)
+        if (request.guild, request.user) in self.nicknames_cache:
+            self.nicknames_cache[(request.guild, request.user)].append(request.nickname)
         else:
-            self.nicknames_cache[request.user] = [request.nickname]
+            self.nicknames_cache[(request.guild, request.user)] = [request.nickname]
 
         await self._col.update_one(
             {'id': request_id},
@@ -104,7 +104,7 @@ class Roles:
         return [RoleRequest(**doc) async for doc in self._col.find({'guild': guild, 'user': user})]
 
     async def nickname_history(self, guild: int, user: int) -> list[str]:
-        if user in self.nicknames_cache:
-            return self.nicknames_cache[user]
-        self.nicknames_cache[user] = list(set(await self._col.distinct('nickname', {'guild': guild, 'user': user})))
-        return self.nicknames_cache[user]
+        if (guild, user) in self.nicknames_cache:
+            return self.nicknames_cache[(guild, user)]
+        self.nicknames_cache[(guild, user)] = list(set(await self._col.distinct('nickname', {'guild': guild, 'user': user})))
+        return self.nicknames_cache[(guild, user)]

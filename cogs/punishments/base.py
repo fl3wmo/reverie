@@ -28,7 +28,8 @@ class PunishmentsBase(commands.Cog, name='punishments'):
         await interaction.response.send_message(templates.embed_mentions(embed), embed=embed, ephemeral=True)
 
     @app_commands.command(name='alist', description='Выводит список нарушений пользователя')
-    @app_commands.describe(user='ID пользователя для вывода списка нарушений', global_alist='Выводить нарушения на всех серверах (DS+)')
+    @app_commands.describe(user='ID пользователя для вывода списка нарушений',
+                           global_alist='Выводить нарушения на всех серверах (DS+)')
     @app_commands.rename(user='id-пользователя', global_alist='глобальный')
     @app_commands.default_permissions(manage_nicknames=True)
     async def alist(self, interaction: discord.Interaction, user: str, global_alist: bool = False):
@@ -38,7 +39,9 @@ class PunishmentsBase(commands.Cog, name='punishments'):
 
         _, user = await self.bot.getch_any(interaction.guild, user)
 
-        actions = list(enumerate(await db.actions.by_user(user.id, guild=interaction.guild.id if not global_alist else None, counting=True), 1))
+        actions = list(enumerate(
+            await db.actions.by_user(user.id, guild=interaction.guild.id if not global_alist else None, counting=True),
+            1))
         if not actions:
             raise ValueError('Наказаний не найдено')
 
@@ -58,16 +61,16 @@ class PunishmentsBase(commands.Cog, name='punishments'):
         if action is None:
             raise ValueError('Действие не найдено')
         await db.actions.deactivate(action_id, reviewer.id)
-        
+
         if (result := re.search(r'mute_(?P<type>text|voice|full)_give', action.type)) is not None:
             mutes = self.bot.get_cog('mute')
             if len([a for a in db.punishments.mutes.current if a.action == action.id]) == 0:
                 return
-            
+
             guild = self.bot.get_guild(action.guild)
             if guild is None:
                 raise ValueError('Сервер не найден')
-            
+
             member = await self.bot.getch_member(guild, action.user, reviewer)
             if member:
                 await mutes.manage_mute_role(member, action.guild, result.group('type'), 'remove')

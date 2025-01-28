@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from motor.motor_asyncio import AsyncIOMotorClient as MotorClient
 
+import validation
 from database.punishments.bans import Bans
 from database.punishments.hides import Hides
 from database.punishments.warns import Warns
@@ -23,6 +24,7 @@ class Punishments:
         self.bans = Bans(self._db['bans'], actions)
         self.warns = Warns(self._db['warns'], actions)
         self.hides = Hides(self._db['hides'], actions)
+        self.actions = actions
 
 
     def _get_filtered_categories(self, exclude: Optional[list[str]] = None, include: Optional[list[str]] = None) -> \
@@ -31,11 +33,22 @@ class Punishments:
             raise ValueError("Either exclude or include must be specified, not both")
         return [c for c in reason_hints if c in include] if include else [c for c in reason_hints if c not in exclude]
 
-    def _generate_choices(self, categories: list[str]) -> list[app_commands.Choice]:
+    def _generate_choices(self, categories: list[str], reason_history: list[str]) -> list[app_commands.Choice]:
         choices = []
+        counts = {}
+        for category in categories:
+            for key, value in sorted(reason_hints.get(category, {}).items(), reverse=True, key=lambda x: len(x[1])):
+                for reason in list(reason_history):
+                    if value in reason:
+                        counts[value] = counts.get(value, 0) + 1
+                        reason_history.remove(reason)
+
         for category in categories:
             for key, value in reason_hints.get(category, {}).items():
-                choices.append(app_commands.Choice(name=f"{category}: {key}", value=value))
+                extend = ''
+                if count := counts.get(value):
+                    extend = ' (рецидив' + (f' x{count}' if count > 1 else '') + ')'
+                choices.append(app_commands.Choice(name=f"{category}: {key}{extend}", value=value + extend))
         return choices
 
     @staticmethod
@@ -67,6 +80,12 @@ class Punishments:
             include_categories: Optional[list[str]] = None,
             escalated_categories: Optional[list[str]] = None
     ) -> list[app_commands.Choice[str]]:
+        if interaction.namespace.__contains__('пользователь'):
+            user_id = validation.user_id(interaction.namespace['пользователь'])
+            reason_history = list(await self.actions.reasons_history(user_id=user_id, guild_id=interaction.guild.id))
+        else:
+            reason_history = []
+
         categories = self._get_filtered_categories(exclude_categories, include_categories)
         stripped_current = current.strip()
         escalated_categories = escalated_categories or []
@@ -81,14 +100,14 @@ class Punishments:
                app_commands.Choice(name=cat, value=f'not_pick:{cat}')
                for cat in categories
             ]
-            escalated_choices = self._generate_choices(escalated_categories)
+            escalated_choices = self._generate_choices(escalated_categories, reason_history)
             return base_choices + ([app_commands.Choice(name='Быстрые наказания: (нужно нажимать, после отправки они автоматически заменятся на полную причину)', value="not_pick_hint")] if escalated_choices else []) + escalated_choices
 
         picked_categories = self._get_picked_categories(stripped_current, categories)
         if picked_categories:
-            return self._generate_choices(picked_categories)
+            return self._generate_choices(picked_categories, reason_history)
 
-        all_variants = self._generate_choices(categories) + self._generate_choices(escalated_categories)
+        all_variants = self._generate_choices(categories, reason_history) + self._generate_choices(escalated_categories, reason_history)
 
         for variant in all_variants:
             if variant.name in stripped_current:
