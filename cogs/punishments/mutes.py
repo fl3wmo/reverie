@@ -40,8 +40,8 @@ class MutesCog(commands.Cog, name='mute'):
         self.ctx_menu.default_permissions = discord.Permissions(manage_nicknames=True)
         self.bot.tree.add_command(self.ctx_menu)
 
-    mute = app_commands.Group(name='mute', description='Выдать мут', default_permissions=discord.Permissions(manage_nicknames=True))
-    unmute = app_commands.Group(name='unmute', description='Снять мут', default_permissions=discord.Permissions(manage_nicknames=True))
+    mute = app_commands.Group(name='mute', description='Выдать мут', default_permissions=discord.Permissions(manage_nicknames=True), guild_only=True)
+    unmute = app_commands.Group(name='unmute', description='Снять мут', default_permissions=discord.Permissions(manage_nicknames=True), guild_only=True)
 
     async def mute_text_give(self, interaction: discord.Interaction, user: str | discord.Member | discord.User, duration: str, reason: str, *, screenshot: tuple[discord.Message, int] | None = None):
         member, user = await self.bot.getch_any(interaction.guild, user, interaction.user)

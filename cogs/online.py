@@ -42,6 +42,7 @@ class OnlineCog(commands.Cog):
         date='Дата в формате dd.mm.YYYY',
         is_open='Подсчитывать онлайн только в открытых каналах.'
     )
+    @app_commands.guild_only()
     @app_commands.autocomplete(date=autocompletes.date)
     async def online(self, interaction: discord.Interaction,
                      user: discord.Member,
@@ -67,6 +68,7 @@ class OnlineCog(commands.Cog):
     @app_commands.describe(user='Пользователь, чей онлайн вы хотите проверить', week='Текущая или прошлая неделя')
     @app_commands.choices(week=[app_commands.Choice(name='Текущая', value='Текущая'), app_commands.Choice(name='Прошлая', value='Прошлая')])
     @app_commands.default_permissions(manage_nicknames=True)
+    @security.restricted(security.PermissionLevel.MD)
     async def week_online(self, interaction: discord.Interaction, week: app_commands.Choice[str], user: discord.Member = None):
         today = datetime.datetime.now()
         user = user or interaction.user
@@ -109,6 +111,7 @@ class OnlineCog(commands.Cog):
         is_open='Подсчитывать онлайн только в открытых каналах.',
         this_guild='Подсчитывать онлайн только на этом сервере.'
     )
+    @app_commands.guild_only()
     async def online_top(self, interaction: discord.Interaction, year: app_commands.Range[int, 2023, datetime.datetime.now().year], month: app_commands.Range[int, 1, 12], is_open: bool, this_guild: bool = True):
         await interaction.response.defer(ephemeral=True)
         info = await self.db.get_top(year, month, is_open, interaction.guild.id if this_guild else None)
@@ -148,6 +151,7 @@ class OnlineCog(commands.Cog):
         date='Дата в формате dd.mm.YYYY'
     )
     @app_commands.autocomplete(date=autocompletes.date)
+    @security.restricted(security.PermissionLevel.DS)
     async def admin_online(self, interaction: discord.Interaction, date: str):
         if not is_date_valid(date):
             raise ValueError('Неверный формат даты. Формат: dd.mm.YYYY.\nПример: 07.07.2077')

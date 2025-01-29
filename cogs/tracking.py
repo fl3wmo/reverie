@@ -27,6 +27,7 @@ class ActionInfo(NamedTuple):
 
 
 @app_commands.default_permissions(manage_nicknames=True)
+@app_commands.guild_only()
 class TrackingCog(commands.GroupCog, name='tracking'):
     def __init__(self, bot: EsBot):
         self.bot = bot

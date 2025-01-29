@@ -2,6 +2,7 @@ import enum
 import functools
 
 import discord
+from discord import app_commands
 
 from templates import on_tree_error
 
@@ -104,6 +105,7 @@ def is_in_head_moderation_team(user: discord.User, guilds: list[discord.Guild]) 
 
 def restricted(level: PermissionLevel):
     def wrapper(func):
+        @app_commands.guild_only()
         @functools.wraps(func)
         async def inner(*args, **kwargs):
             interaction = args[1]

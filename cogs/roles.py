@@ -149,6 +149,7 @@ class RolesCog(commands.Cog):
         photo_proof='Скриншот статистики',
         photo_additional='Дополнительный скриншот для игроков Hassle'
     )
+    @app_commands.guild_only()
     @app_commands.choices(organization=[app_commands.Choice(name=role, value=role) for role in role_info.keys()])
     @app_commands.autocomplete(rang=rang_callback, nickname=nickname_callback)
     async def request_role(self, interaction: discord.Interaction, nickname: app_commands.Range[str, 3, 19],
@@ -164,6 +165,7 @@ class RolesCog(commands.Cog):
             await self.handle_new_role_request(interaction, nickname, organization.value, rang, requested_role,
                                                photo_proof, photo_additional)
 
+    @app_commands.guild_only()
     @app_commands.command(name='role-remove', description='Снять роль фракции')
     async def remove_role(self, interaction: discord.Interaction):
         """Команда для снятия роли."""
@@ -178,6 +180,7 @@ class RolesCog(commands.Cog):
     @app_commands.command(name='role-history', description='История ролей пользователя')
     @app_commands.rename(user='пользователь')
     @app_commands.describe(user='Пользователь, историю ролей которого нужно посмотреть')
+    @app_commands.guild_only()
     async def role_history(self, interaction: discord.Interaction, user: str):
         """Команда для просмотра истории ролей пользователя."""
         member, user = await self.bot.getch_any(interaction.guild, user)

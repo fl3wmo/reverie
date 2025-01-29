@@ -20,6 +20,7 @@ class PunishmentsBase(commands.Cog, name='punishments'):
     @app_commands.describe(action='Порядковый номер действия для вывода информации')
     @app_commands.rename(action='номер-действия')
     @app_commands.default_permissions(manage_nicknames=True)
+    @security.restricted(security.PermissionLevel.MD)
     async def act(self, interaction: discord.Interaction, action: int):
         action = await db.actions.get(action)
         if action is None:
@@ -32,6 +33,7 @@ class PunishmentsBase(commands.Cog, name='punishments'):
                            global_alist='Выводить нарушения на всех серверах (DS+)')
     @app_commands.rename(user='id-пользователя', global_alist='глобальный')
     @app_commands.default_permissions(manage_nicknames=True)
+    @security.restricted(security.PermissionLevel.MD)
     async def alist(self, interaction: discord.Interaction, user: str, global_alist: bool = False):
         owner = interaction.user
         if global_alist and security.user_level(owner) <= security.PermissionLevel.DS:
