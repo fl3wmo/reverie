@@ -3,9 +3,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import security
-import templates
-from bot import Reverie
+from core import security, templates
+from core.bot import Reverie
 from database import db
 from database.punishments.warns import Warns
 

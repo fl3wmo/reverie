@@ -6,11 +6,9 @@ from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
-import autocompletes
-from features import Pagination
-import security
-import templates
-from bot import Reverie
+from core import autocompletes, security, templates
+from core.features import Pagination
+from core.bot import Reverie
 from database.online.features import is_date_valid
 from info.tracking.stats import ModeratorStats
 from info.tracking.tracker import ModeratorTracker

@@ -6,7 +6,7 @@ from discord._types import ClientT
 
 from buttons.utils import int_to_base64, base64_to_int
 from database import db
-from templates import on_tree_error
+from core.templates import on_tree_error
 
 
 class OnlineReload(discord.ui.DynamicItem[discord.ui.Button], template='online:reload:(?P<user_id>.+?):(?P<author_id>.+?):(?P<guild_id>.+?):(?P<is_open>[01]):(?P<date>.+)'):

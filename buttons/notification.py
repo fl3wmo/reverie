@@ -6,9 +6,9 @@ from discord import Interaction
 from discord._types import ClientT
 
 from database import db
-from features import find_channel_by_name
-from templates import on_tree_error
-import templates
+from core.features import find_channel_by_name
+from core.templates import on_tree_error
+from core import templates
 
 
 def int_to_base64(num):

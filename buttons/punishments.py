@@ -5,7 +5,7 @@ import discord
 from discord import Interaction
 from discord._types import ClientT
 
-import security
+from core import security
 from database import db
 
 

@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from motor.motor_asyncio import AsyncIOMotorClient as MotorClient
 
-import validation
+from core import validation
 from database.punishments.bans import Bans
 from database.punishments.hides import Hides
 from database.punishments.warns import Warns

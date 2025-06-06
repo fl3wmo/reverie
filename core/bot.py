@@ -23,7 +23,7 @@ class Reverie(commands.Bot):
         await self.load_extensions()
 
     async def load_extensions(self):
-        for filename in os.listdir('./cogs'):
+        for filename in os.listdir('../cogs'):
             if '__' not in filename:
                 filename = filename.replace('.py', '')
                 await self.load_extension(f'cogs.{filename}')

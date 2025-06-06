@@ -2,7 +2,7 @@ import datetime
 import aiosqlite
 import discord
 
-import templates
+from core import templates
 from database.online.features import get_dict_of_time_intervals, mashup_info, seconds_to_time
 
 

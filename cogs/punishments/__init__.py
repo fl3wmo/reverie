@@ -7,7 +7,7 @@ import cogs.punishments.warns as warns
 import cogs.punishments.hides as hides
 
 if TYPE_CHECKING:
-    from bot import Reverie
+    from core.bot import Reverie
 
 
 async def setup(bot: Reverie):

@@ -5,12 +5,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import security
-import templates
-import validation
-from bot import Reverie
+from core import security, templates, validation
+from core.bot import Reverie
 from database import db
-from templates import on_tree_error
+from core.templates import on_tree_error
 
 
 class MutesModal(discord.ui.Modal, title='Выдача текстового мута'):

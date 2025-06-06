@@ -5,9 +5,7 @@ from typing import Literal
 import discord
 
 import buttons
-import features
-import security
-import templates
+from core import security, templates, features
 
 type action = Literal[
     'role_approve', 'role_reject', 'role_remove',

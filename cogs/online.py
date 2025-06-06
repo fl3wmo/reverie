@@ -1,17 +1,13 @@
 import datetime
-import json
 
 import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-
-import security
-import templates
-from bot import Reverie
+from core.bot import Reverie
 from buttons.online import online_reload
-import autocompletes
+from core import autocompletes, security, templates
 from database import db
 from database.online.features import is_counting, is_date_valid
 from database.online.general import CurrentInfo

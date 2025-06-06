@@ -8,7 +8,7 @@ from database.actions.action import Act, action
 from info.punishments import hints_to_definitions
 
 if typing.TYPE_CHECKING:
-    from bot import Reverie
+    from core.bot import Reverie
 
 
 class Actions:

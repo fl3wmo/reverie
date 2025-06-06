@@ -5,13 +5,11 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-import security
-import templates
-import validation
-from bot import Reverie
+from core import security, templates, validation
+from core.bot import Reverie
 from buttons.roles import UnderReviewIndicator
 from database import db
-from features import Pagination, find_channel_by_name
+from core.features import Pagination, find_channel_by_name
 from info.roles import role_info, RoleInfo
 
 

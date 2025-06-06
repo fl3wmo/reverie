@@ -1,11 +1,9 @@
 import datetime
-import enum
 from dataclasses import dataclass, asdict
 
 import discord
 
-import buttons
-import templates
+from core import templates
 from database.actions.action import Act
 from info.roles import RoleInfo, role_info
 

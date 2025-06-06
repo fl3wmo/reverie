@@ -4,10 +4,8 @@ import discord
 from discord import app_commands, Object
 from discord.ext import commands
 
-import security
-import templates
-import validation
-from bot import Reverie
+from core import security, templates, validation
+from core.bot import Reverie
 from database import db
 
 if typing.TYPE_CHECKING:

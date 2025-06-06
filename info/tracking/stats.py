@@ -2,9 +2,9 @@ import datetime
 from dataclasses import dataclass
 from typing import Dict, List
 
-import templates
+from core import templates
 from database.online.features import date_range
-from templates import format_plural
+from core.templates import format_plural
 from database.roles.request import RoleRequest
 
 

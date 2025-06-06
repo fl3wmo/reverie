@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-import templates
+from core import templates
 from database.roles.request import RoleRequest
 
 

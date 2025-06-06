@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from discord.ext import commands
 
 if TYPE_CHECKING:
-    from bot import Reverie
+    from core.bot import Reverie
 
 
 class MainCog(commands.Cog):

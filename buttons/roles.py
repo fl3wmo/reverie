@@ -5,11 +5,10 @@ import discord
 from discord import Interaction
 from discord._types import ClientT
 
-import security
-import templates
+from core import security, templates
 from database import db
 from database.roles.request import RequestStatus, RoleRequest
-from templates import on_tree_error
+from core.templates import on_tree_error
 
 
 class UnderReviewIndicator(discord.ui.View):

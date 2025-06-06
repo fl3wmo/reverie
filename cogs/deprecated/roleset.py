@@ -1,18 +1,8 @@
-import asyncio
-from typing import NamedTuple
-
 import discord
 from discord.ext import commands
-from discord import app_commands
 
-import security
-import templates
-import validation
-from bot import Reverie
-from buttons.roles import UnderReviewIndicator
-from database import db
-from features import Pagination, find_channel_by_name
-from info.roles import role_info, RoleInfo
+from core import security
+from core.bot import Reverie
 
 
 class RolesetCog(commands.Cog):
