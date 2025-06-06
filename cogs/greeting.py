@@ -21,6 +21,7 @@ class Greeting(commands.Cog):
 
     @app_commands.command(name='greet', description='Статус приветствий для новых участников')
     @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
     async def greet_status(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
 
