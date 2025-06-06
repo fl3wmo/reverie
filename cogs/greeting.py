@@ -82,13 +82,18 @@ class Greeting(commands.Cog):
         settings = await self.db.get_settings(interaction.guild.id)
 
         settings.guild_enabled = not settings.guild_enabled
-        if settings.enabled and not settings.guild_text:
+        if settings.guild_enabled and not settings.guild_text:
             return await interaction.response.send_message(
                 'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
                 ephemeral=True
             )
+        if settings.guild_enabled and not settings.guild_channel:
+            return await interaction.response.send_message(
+                'Пожалуйста, сначала установите канал для приветствий в гильдии с помощью команды `/guild-greet set-channel`.',
+                ephemeral=True
+            )
 
-        await self.db.set_enabled(interaction.guild.id, "channel", settings.enabled)
+        await self.db.set_enabled(interaction.guild.id, "channel", settings.guild_enabled)
 
         status = 'включено' if settings.guild_enabled else 'выключено'
         await interaction.response.send_message(f'### Приветствие в гильдии {status}.', ephemeral=True)
