@@ -48,6 +48,12 @@ class Greeting(commands.Cog):
         settings = await self.db.get_settings(interaction.guild.id)
 
         settings.dm_enabled = not settings.dm_enabled
+        if settings.dm_enabled and not settings.dm_text:
+            return await interaction.response.send_message(
+                'Пожалуйста, сначала установите сообщение приветствия в ЛС с помощью команды `/dm-greet set-message`.',
+                ephemeral=True
+            )
+
         await self.db.set_enabled(interaction.guild.id, "dm", settings.dm_enabled)
 
         status = 'включено' if settings.enabled else 'выключено'
@@ -76,6 +82,12 @@ class Greeting(commands.Cog):
         settings = await self.db.get_settings(interaction.guild.id)
 
         settings.enabled = not settings.enabled
+        if settings.enabled and not settings.guild_message:
+            return await interaction.response.send_message(
+                'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
+                ephemeral=True
+            )
+
         await self.db.set_enabled(interaction.guild.id, "channel", settings.enabled)
 
         status = 'включено' if settings.enabled else 'выключено'
