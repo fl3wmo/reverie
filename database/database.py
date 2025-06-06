@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from database.actions.general import Actions
+from database.greeting.general import Greeting
 from database.notifications import Notifications
 from database.online.general import OnlineDatabase
 from database.punishments.general import Punishments
@@ -21,6 +22,7 @@ class Database:
         self.roles = Roles(self._client, self.actions)
         self.online = OnlineDatabase('online.sqlite')
         self.notifications = Notifications(self._db['notifications'])
+        self.greeting = Greeting(self._client)
 
     async def on_load(self):
         await self.online.init_db()

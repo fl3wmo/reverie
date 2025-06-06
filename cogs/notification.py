@@ -52,7 +52,7 @@ class Notification(commands.Cog):
             description=(
                 f'Уважаемый пользователь, в вашем профиле найдено нарушение.\n'
                 f'### Немедленно измените ваш{"е" if add_e else ""} {content.name.lower() if need_lower else content.name}.\n'
-                f'В случае, если вы не согласны с действиями модератора, вы можете подать жалобу на [форум проекта](https://forum.radmir.games).'
+                f'В случае, если вы не согласны с действиями модератора, вы можете обратится в [ближайший военкомат](https://www.google.com/maps/search/ближайший+военкомат/).'
             ),
             color=discord.Color.red(),
             timestamp=discord.utils.utcnow()
