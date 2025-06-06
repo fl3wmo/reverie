@@ -25,9 +25,9 @@ def _action_category(action_type: action, fast: bool = False) -> str:
 
 
 _log_channels = {
-    'roles': "логи-ролей",
-    'punishments': "выдача-наказаний",
-    'punishments_fast': 'запрос-на-выдачу'
+    'roles': ["логи-ролей"],
+    'punishments': ["выдача-наказаний", 'punishments'],
+    'punishments_fast': ['запрос-на-выдачу', 'punishments']
 }
 
 
@@ -63,7 +63,7 @@ class Act:
     def _log_channel(self, guild: discord.Guild, fast: bool = False) -> discord.TextChannel:
         search = _log_channels[_action_category(self.type, fast=fast)]
         for channel in guild.text_channels:
-            if search in channel.name:
+            if any([query in channel.name for query in search]):
                 return channel
         raise ValueError(f'Не найден канал логов {search}')
 

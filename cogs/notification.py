@@ -94,7 +94,7 @@ class Notification(commands.Cog):
         embed.add_field(name='Пользователь', value=templates.user(notification.user))
         embed.set_footer(text='Время отправки уведомления')
 
-        channel = find_channel_by_name(guild, "чат-модерации", "чат-модераторов", "moderation")
+        channel = find_channel_by_name(guild, "чат-модерации", "чат-модераторов", "moderation", "chat-md")
         try:
             await moderator.send(templates.embed_mentions(embed), embed=embed, view=send_notification(notification))
         except discord.Forbidden:
