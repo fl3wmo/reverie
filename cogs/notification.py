@@ -11,7 +11,7 @@ from buttons import send_notification
 import security
 import templates
 import validation
-from bot import EsBot
+from bot import Reverie
 from buttons.roles import UnderReviewIndicator
 from database import db
 from features import Pagination, find_channel_by_name
@@ -33,7 +33,7 @@ profile_places: dict[str, str] = {
 }
 
 class Notification(commands.Cog):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.notifications
     
@@ -112,5 +112,5 @@ class Notification(commands.Cog):
                 embed=embed, view=send_notification(notification)
             )
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(Notification(bot))

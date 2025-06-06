@@ -15,7 +15,7 @@ class Database:
         load_dotenv()
         
         self._client = AsyncIOMotorClient(os.getenv('MONGODB'))
-        self._db = self._client['EsBot']
+        self._db = self._client['Reverie']
         self.actions = Actions(self._db['actions'])
         self.punishments = Punishments(self._client, self.actions)
         self.roles = Roles(self._client, self.actions)

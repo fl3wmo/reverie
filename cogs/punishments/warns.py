@@ -5,14 +5,14 @@ from discord.ext import commands
 
 import security
 import templates
-from bot import EsBot
+from bot import Reverie
 from database import db
 from database.punishments.warns import Warns
 
 
 @app_commands.default_permissions(manage_nicknames=True)
 class WarnsCog(commands.Cog, name='warn'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db: Warns = db.punishments.warns
 
@@ -81,5 +81,5 @@ class WarnsCog(commands.Cog, name='warn'):
         await templates.link_action(interaction, act, user=user, moderator=interaction.user)
 
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(WarnsCog(bot))

@@ -10,7 +10,7 @@ import autocompletes
 from features import Pagination
 import security
 import templates
-from bot import EsBot
+from bot import Reverie
 from database.online.features import is_date_valid
 from info.tracking.stats import ModeratorStats
 from info.tracking.tracker import ModeratorTracker
@@ -29,7 +29,7 @@ class ActionInfo(NamedTuple):
 @app_commands.default_permissions(manage_nicknames=True)
 @app_commands.guild_only()
 class TrackingCog(commands.GroupCog, name='tracking'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         super().__init__()
 
@@ -279,5 +279,5 @@ class TrackingCog(commands.GroupCog, name='tracking'):
         
         await paginator.send_initial_message()
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(TrackingCog(bot))

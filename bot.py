@@ -11,7 +11,7 @@ from database import db
 from templates import on_tree_error
 
 
-class EsBot(commands.Bot):
+class Reverie(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.command_ids = {}

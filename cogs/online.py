@@ -9,7 +9,7 @@ from discord.ext import commands
 
 import security
 import templates
-from bot import EsBot
+from bot import Reverie
 from buttons.online import online_reload
 import autocompletes
 from database import db
@@ -30,7 +30,7 @@ class AbstractUser:
 
 
 class OnlineCog(commands.Cog):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.online
         self.hassle_data: dict[str, None | dict | datetime.datetime] = {'last_update': None, 'data': None}
@@ -235,5 +235,5 @@ class OnlineCog(commands.Cog):
                 
             await self.update_users(current_info, channel)
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(OnlineCog(bot))

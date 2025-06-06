@@ -6,13 +6,13 @@ from discord.ext import commands
 
 import security
 import templates
-from bot import EsBot
+from bot import Reverie
 from database import db
 
 
 @app_commands.default_permissions(manage_nicknames=True)
 class HideCog(commands.Cog, name='hide'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.punishments.hides
 
@@ -58,5 +58,5 @@ class HideCog(commands.Cog, name='hide'):
         elif member.is_timed_out():
             await member.timeout(None)
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(HideCog(bot))

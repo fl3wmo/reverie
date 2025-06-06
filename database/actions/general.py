@@ -8,7 +8,7 @@ from database.actions.action import Act, action
 from info.punishments import hints_to_definitions
 
 if typing.TYPE_CHECKING:
-    from bot import EsBot
+    from bot import Reverie
 
 
 class Actions:
@@ -97,7 +97,7 @@ class Actions:
             self.reasons_cache[(act.guild, act.user)].remove(act.reason)
         await self._collection.update_one({'id': act_id}, {'$set': {'reviewer': reviewer, 'counting': False}})
 
-    async def approve(self, act_id: int, reviewer: int, client: 'EsBot' = None,
+    async def approve(self, act_id: int, reviewer: int, client: 'Reverie' = None,
                       interaction: discord.Interaction = None) -> None:
         act = await self.get(act_id)
         if 'ban' in act.type and 'give' in act.type:

@@ -8,7 +8,7 @@ from discord import app_commands
 import security
 import templates
 import validation
-from bot import EsBot
+from bot import Reverie
 from buttons.roles import UnderReviewIndicator
 from database import db
 from features import Pagination, find_channel_by_name
@@ -16,7 +16,7 @@ from info.roles import role_info, RoleInfo
 
 
 class RolesetCog(commands.Cog):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
     
     @commands.Cog.listener()
@@ -54,5 +54,5 @@ class RolesetCog(commands.Cog):
                     await member.remove_roles(head_mod_role)
 
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(RolesetCog(bot))

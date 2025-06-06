@@ -7,7 +7,7 @@ from discord.ext import commands
 import security
 import templates
 import validation
-from bot import EsBot
+from bot import Reverie
 from database import db
 
 if typing.TYPE_CHECKING:
@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 
 
 class BansCog(commands.Cog, name='ban'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db: Bans = db.punishments.bans
 
@@ -151,13 +151,13 @@ class BansCog(commands.Cog, name='ban'):
         if is_ban:
             await member.ban(reason='Глобальный бан')
 
-    async def on_ban_expiration(self, mute):
-        guilds = [self.bot.get_guild(mute.guild)] if mute.type == 'local' else self.bot.guilds
+    async def on_ban_expiration(self, ban):
+        guilds = [self.bot.get_guild(ban.guild)] if ban.type == 'local' else self.bot.guilds
         for guild in guilds:
             try:
-                await guild.unban(Object(id=mute.user))
+                await guild.unban(Object(id=ban.user))
             except discord.Forbidden:
                 pass
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(BansCog(bot))

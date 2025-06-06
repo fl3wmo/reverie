@@ -6,13 +6,13 @@ from discord.ext import commands
 
 import security
 import templates
-from bot import EsBot
+from bot import Reverie
 from database import db
 from features import Pagination
 
 
 class PunishmentsBase(commands.Cog, name='punishments'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.punishments
 
@@ -79,5 +79,5 @@ class PunishmentsBase(commands.Cog, name='punishments'):
             await self.db.mutes.remove(action.user, action.guild, reviewer.id, result.group('type'))
 
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(PunishmentsBase(bot))

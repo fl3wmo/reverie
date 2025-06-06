@@ -8,7 +8,7 @@ from discord import app_commands
 import security
 import templates
 import validation
-from bot import EsBot
+from bot import Reverie
 from buttons.roles import UnderReviewIndicator
 from database import db
 from features import Pagination, find_channel_by_name
@@ -28,7 +28,7 @@ class ActionInfo(NamedTuple):
 
 
 class RolesCog(commands.Cog):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.roles
         self.ctx_menu = app_commands.ContextMenu(
@@ -235,5 +235,5 @@ class RolesCog(commands.Cog):
         await remove.notify_user(target, interaction.user)
 
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(RolesCog(bot))

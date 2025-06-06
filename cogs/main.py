@@ -1,10 +1,14 @@
 import logging
+from typing import TYPE_CHECKING
 
 from discord.ext import commands
 
+if TYPE_CHECKING:
+    from bot import Reverie
+
 
 class MainCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -17,5 +21,5 @@ class MainCog(commands.Cog):
                 self.bot.command_ids[command.name] = command.id
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: Reverie):
     await bot.add_cog(MainCog(bot))

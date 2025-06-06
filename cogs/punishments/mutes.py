@@ -8,7 +8,7 @@ from discord.ext import commands
 import security
 import templates
 import validation
-from bot import EsBot
+from bot import Reverie
 from database import db
 from templates import on_tree_error
 
@@ -31,7 +31,7 @@ class MutesModal(discord.ui.Modal, title='Выдача текстового му
 
 @app_commands.default_permissions(manage_nicknames=True)
 class MutesCog(commands.Cog, name='mute'):
-    def __init__(self, bot: EsBot):
+    def __init__(self, bot: Reverie):
         self.bot = bot
         self.db = db.punishments.mutes
         self.ctx_menu = app_commands.ContextMenu(
@@ -311,5 +311,5 @@ async def get_or_create_mute_role(guild: discord.Guild, mute_type: str) -> disco
     return mute_role
 
 
-async def setup(bot: EsBot):
+async def setup(bot: Reverie):
     await bot.add_cog(MutesCog(bot))
