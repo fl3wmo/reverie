@@ -32,8 +32,8 @@ class Greeting(commands.Cog):
             description=(
                 f'Приветствие в гильдии: {status}\n'
                 f'Приветствие в ЛС: {dm_status}\n'
-                f'Сообщение приветствия в гильдии: {settings.guild_message}\n'
-                f'Сообщение приветствия в ЛС: {settings.dm_message}'
+                f'Сообщение приветствия в гильдии: {settings.guild_text}\n'
+                f'Сообщение приветствия в ЛС: {settings.dm_text}\n'
             ),
             color=discord.Color.green()
         )
