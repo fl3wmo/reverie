@@ -14,7 +14,7 @@ class Database:
     def __init__(self):
         load_dotenv()
         
-        self._client = AsyncIOMotorClient(os.getenv('MONGODB'))
+        self._client = AsyncIOMotorClient(os.getenv('MONGO_URI'))
         self._db = self._client['Reverie']
         self.actions = Actions(self._db['actions'])
         self.punishments = Punishments(self._client, self.actions)

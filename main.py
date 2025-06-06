@@ -8,7 +8,7 @@ from core.bot import Reverie
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Reverie(command_prefix='es!', intents=discord.Intents.all())
+bot = Reverie(command_prefix='re!', intents=discord.Intents.all())
 
 load_dotenv()
 
