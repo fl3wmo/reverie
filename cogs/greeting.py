@@ -82,7 +82,7 @@ class Greeting(commands.Cog):
         settings = await self.db.get_settings(interaction.guild.id)
 
         settings.guild_enabled = not settings.guild_enabled
-        if settings.enabled and not settings.guild_message:
+        if settings.enabled and not settings.guild_text:
             return await interaction.response.send_message(
                 'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
                 ephemeral=True
@@ -99,7 +99,7 @@ class Greeting(commands.Cog):
     async def set_guild_greet_message(self, interaction: discord.Interaction, message: str):
         settings = await self.db.get_settings(interaction.guild.id)
 
-        settings.guild_message = message
+        settings.guild_text = message
         await self.db.set_text(interaction.guild.id, message, "channel")
 
         await interaction.response.send_message('### Сообщение приветствия в гильдии обновлено.', ephemeral=True)
