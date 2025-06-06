@@ -15,7 +15,7 @@ class Greeting:
 
     async def get_settings(self, guild: int) -> GreetingSettings | None:
         result = await self._col.find_one({'guild': guild})
-        return GreetingSettings(**result) if result else None
+        return GreetingSettings(**result) if result else GreetingSettings(guild=guild)
 
     async def set_text(self, guild: int, new_text: str, where: Location) -> None:
         await self._col.update_one(

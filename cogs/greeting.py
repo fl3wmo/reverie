@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING
-
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from database import db
-
 from core.bot import Reverie
+from database import db
 
 
 class Greeting(commands.Cog):
@@ -26,8 +23,6 @@ class Greeting(commands.Cog):
     @app_commands.default_permissions(administrator=True)
     async def greet_status(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         status = 'включено' if settings.enabled else 'выключено'
         dm_status = 'включено' if settings.dm_enabled else 'выключено'
@@ -54,8 +49,6 @@ class Greeting(commands.Cog):
     @app_commands.default_permissions(administrator=True)
     async def toggle_dm_greet(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         settings.dm_enabled = not settings.dm_enabled
         await self.db.set_enabled(interaction.guild.id, "dm", settings.dm_enabled)
@@ -68,8 +61,6 @@ class Greeting(commands.Cog):
     @app_commands.describe(message='Сообщение приветствия')
     async def set_dm_greet_message(self, interaction: discord.Interaction, message: str):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         settings.dm_message = message
         await self.db.set_text(interaction.guild.id, message, "dm")
@@ -86,8 +77,6 @@ class Greeting(commands.Cog):
     @app_commands.default_permissions(administrator=True)
     async def toggle_guild_greet(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         settings.enabled = not settings.enabled
         await self.db.set_enabled(interaction.guild.id, "channel", settings.enabled)
@@ -100,8 +89,6 @@ class Greeting(commands.Cog):
     @app_commands.describe(message='Сообщение приветствия')
     async def set_guild_greet_message(self, interaction: discord.Interaction, message: str):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         settings.guild_message = message
         await self.db.set_text(interaction.guild.id, message, "channel")
@@ -113,13 +100,13 @@ class Greeting(commands.Cog):
     @app_commands.describe(channel='Канал для приветствий')
     async def set_guild_greet_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         settings = await self.db.get_settings(interaction.guild.id)
-        if not settings:
-            settings = await self.db.create_settings(interaction.guild.id)
 
         settings.channel_id = channel.id
         await self.db.set_channel(interaction.guild.id, channel.id)
 
-        await interaction.response.send_message(f'### Канал для приветствий установлен: {channel.mention}.', ephemeral=True)
+        await interaction.response.send_message(f'### Канал для приветствий установлен: {channel.mention}.',
+                                                ephemeral=True)
+
 
 async def setup(bot: Reverie):
     await bot.add_cog(Greeting(bot))
