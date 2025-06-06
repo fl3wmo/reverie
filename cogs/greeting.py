@@ -28,15 +28,12 @@ class Greeting(commands.Cog):
         dm_status = 'включено' if settings.dm_enabled else 'выключено'
 
         embed = discord.Embed(
-            title='### Статус приветствий',
-            description=(
-                f'Приветствие в гильдии: {status}\n'
-                f'Приветствие в ЛС: {dm_status}\n'
-                f'Сообщение приветствия в гильдии: {settings.guild_text}\n'
-                f'Сообщение приветствия в ЛС: {settings.dm_text}\n'
-            ),
+            title='Статус приветствий',
+            description=f'Вы можете управлять приветствиями используя команды `/dm-greet` и `/guild-greet`.',
             color=discord.Color.green()
         )
+        embed.add_field(name=f'На сервере ({status})', value=settings.guild_text or 'Не установлено', inline=False)
+        embed.add_field(name=f'В ЛС ({dm_status})', value=settings.dm_text or 'Не установлено', inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     dm_group = app_commands.Group(
