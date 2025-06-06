@@ -7,7 +7,7 @@ from typing import Tuple
 import discord
 from discord import app_commands
 
-import security
+from core import security
 
 _action_types = {
     'ban': 'Бан',

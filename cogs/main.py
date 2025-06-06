@@ -1,10 +1,9 @@
 import logging
-from typing import TYPE_CHECKING
 
+import discord
 from discord.ext import commands
 
-if TYPE_CHECKING:
-    from core.bot import Reverie
+from core.bot import Reverie
 
 
 class MainCog(commands.Cog):
@@ -16,6 +15,11 @@ class MainCog(commands.Cog):
         logging.info(f'Logged in as {self.bot.user.name}')
         
         info = await self.bot.tree.sync()
+        await self.bot.change_presence(
+            activity=discord.CustomActivity(name='максимум сваги', emoji='✨'),
+            status=discord.Status.do_not_disturb
+        )
+
         for command in info:
             if command.guild_id is None:
                 self.bot.command_ids[command.name] = command.id

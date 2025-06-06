@@ -1,7 +1,7 @@
 import functools
 import re
 
-import security
+from core import security
 
 
 def user_id(user: str) -> int:

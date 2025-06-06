@@ -6,8 +6,7 @@ from discord.ext import commands
 
 from database import db
 
-if TYPE_CHECKING:
-    from core.bot import Reverie
+from core.bot import Reverie
 
 
 class Greeting(commands.Cog):

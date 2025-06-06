@@ -4,7 +4,7 @@ import functools
 import discord
 from discord import app_commands
 
-from templates import on_tree_error
+from core.templates import on_tree_error
 
 
 class PermissionLevel(enum.IntEnum):

@@ -5,10 +5,10 @@ import discord
 from discord.ext import commands
 
 import buttons
-import security
-import validation
+from core import security
+from core import validation
 from database import db
-from templates import on_tree_error
+from core.templates import on_tree_error
 
 
 class Reverie(commands.Bot):
@@ -23,7 +23,7 @@ class Reverie(commands.Bot):
         await self.load_extensions()
 
     async def load_extensions(self):
-        for filename in os.listdir('../cogs'):
+        for filename in os.listdir('./cogs'):
             if '__' not in filename:
                 filename = filename.replace('.py', '')
                 await self.load_extension(f'cogs.{filename}')

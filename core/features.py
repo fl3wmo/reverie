@@ -3,7 +3,7 @@ import typing
 
 import discord
 
-import templates
+import core.templates
 
 if typing.TYPE_CHECKING:
     from database import Database
