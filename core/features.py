@@ -154,4 +154,7 @@ class Pagination(discord.ui.View):
 
 
 def find_channel_by_name(guild: discord.Guild, *names: str) -> discord.TextChannel:
-    return [c for c in guild.text_channels if any(name in c.name for name in names)][0]
+    channels = [c for c in guild.text_channels if any(name in c.name for name in names)]
+    if not channels:
+        raise ValueError(f"Не найден канал с именем, содержащим: {', '.join(names)}")
+    return channels[0]
