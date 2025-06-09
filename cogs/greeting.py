@@ -63,7 +63,6 @@ class Greeting(commands.Cog):
 
     @dm_group.command(name='set-message', description='Установить сообщение приветствия в ЛС')
     @app_commands.default_permissions(administrator=True)
-    @app_commands.describe(message='Сообщение приветствия')
     async def set_dm_greet_message(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
 
@@ -115,7 +114,6 @@ class Greeting(commands.Cog):
 
     @guild_group.command(name='set-message', description='Установить сообщение приветствия на сервере')
     @app_commands.default_permissions(administrator=True)
-    @app_commands.describe(message='Сообщение приветствия')
     async def set_guild_greet_message(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
 
