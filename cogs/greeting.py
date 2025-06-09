@@ -40,7 +40,8 @@ class Greeting(commands.Cog):
     dm_group = app_commands.Group(
         name='dm-greet',
         description='Управление приветствиями для новых участников в ЛС',
-        guild_only=True
+        guild_only=True,
+        default_permissions=discord.Permissions(administrator=True)
     )
 
     @dm_group.command(name='toggle', description='Включить/выключить приветствие в ЛС')
@@ -74,7 +75,8 @@ class Greeting(commands.Cog):
     guild_group = app_commands.Group(
         name='guild-greet',
         description='Управление приветствиями для новых участников в гильдии',
-        guild_only=True
+        guild_only=True,
+        default_permissions=discord.Permissions(administrator=True)
     )
 
     @guild_group.command(name='toggle', description='Включить/выключить приветствие в гильдии')
