@@ -33,7 +33,7 @@ class Greeting(commands.Cog):
             description=f'Вы можете управлять приветствиями используя команды `/dm-greet` и `/guild-greet`.',
             color=discord.Color.green()
         )
-        embed.add_field(name=f'На сервере ({status})', value=settings.guild_text or 'Не установлено', inline=False)
+        embed.add_field(name=f'На сервере ({status})', value=settings.channel_text or 'Не установлено', inline=False)
         embed.add_field(name=f'В ЛС ({dm_status})', value=settings.dm_text or 'Не установлено', inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -83,7 +83,7 @@ class Greeting(commands.Cog):
         settings = await self.db.get_settings(interaction.guild.id)
 
         settings.guild_enabled = not settings.guild_enabled
-        if settings.guild_enabled and not settings.guild_text:
+        if settings.guild_enabled and not settings.channel_text:
             return await interaction.response.send_message(
                 'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
                 ephemeral=True
@@ -105,7 +105,7 @@ class Greeting(commands.Cog):
     async def set_guild_greet_message(self, interaction: discord.Interaction, message: str):
         settings = await self.db.get_settings(interaction.guild.id)
 
-        settings.guild_text = message
+        settings.channel_text = message
         await self.db.set_text(interaction.guild.id, message, "channel")
 
         await interaction.response.send_message('### Сообщение приветствия в гильдии обновлено.', ephemeral=True)

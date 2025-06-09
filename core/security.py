@@ -17,14 +17,9 @@ class PermissionLevel(enum.IntEnum):
 
 
 _moderator_levels = {
-    1: ('MD', "Модератор"),
-    2: ('SMD', "Ст. Модератор"),
-    3: ('AD', "Ассистент Discord"),
-    4: ('GMD', "Главный Модератор"),
-    5: ('DS', "Следящий за Discord"),
-    6: ('DS+', '△'),
-    7: ('RKN', "Руководитель направления D"),
-    8: ('K+', "Руководство Discord")
+    3: ('MD', "Moderator"),
+    6: ('A', 'Admin'),
+    8: ('A+', "Chief Admin")
 }
 
 
@@ -37,7 +32,7 @@ def _moderator_info(user: discord.Member | discord.User) -> tuple[int, tuple[str
             return level, moderator_role
 
     if user.guild_permissions.administrator:
-        return 8, ('A+', 'Суперпользователь')
+        return 8, ('A+', 'Chief Admin')
 
     return 0, ('', '')
 

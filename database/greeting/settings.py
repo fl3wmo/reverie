@@ -21,7 +21,7 @@ class GreetingSettings:
     guild: int
     guild_enabled: bool = False
     dm_enabled: bool = False
-    guild_text: str = ''
+    channel_text: str = ''
     dm_text: str = ''
     guild_channel: int = None
     _id: str = None
@@ -36,10 +36,10 @@ class GreetingSettings:
         return self.guild_enabled or self.dm_enabled
 
     async def greet(self, new_member: discord.Member) -> None:
-        if self.guild_enabled and self.guild_text:
+        if self.guild_enabled and self.channel_text:
             channel = new_member.guild.get_channel(self.guild_channel) or new_member.guild.system_channel
             if channel:
-                await channel.send(format_message(self.guild_text, new_member))
+                await channel.send(format_message(self.channel_text, new_member))
 
         if self.dm_enabled and self.dm_text:
             try:
