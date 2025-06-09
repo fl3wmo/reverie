@@ -152,7 +152,6 @@ def user_notify_description(act, **objects):
                 description += 'Вам была снята роль.\n'
             else:
                 description += 'Ваше заявление на роль было отклонено.\n'
-        description += "-# В случае, если вы не согласны с действиями модератора, вы можете подать жалобу на [форум проекта](https://forum.radmir.games)."
     return description
 
 def role_requested(nickname, role, rang):

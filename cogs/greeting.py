@@ -1,5 +1,5 @@
 import discord
-from discord import app_commands
+from discord import app_commands, TextStyle
 from discord.ext import commands
 
 from core.bot import Reverie
@@ -67,19 +67,31 @@ class Greeting(commands.Cog):
     async def set_dm_greet_message(self, interaction: discord.Interaction, message: str):
         settings = await self.db.get_settings(interaction.guild.id)
 
-        settings.dm_message = message
-        await self.db.set_text(interaction.guild.id, message, "dm")
+        modal = discord.ui.Modal(title='Новое сообщение приветствия', timeout=None)
+        input_text = discord.ui.TextInput(label='Сообщение приветствия', style=TextStyle.long,
+                                          default=settings.channel_text or '')
+        modal.add_item(input_text)
 
-        await interaction.response.send_message('### Сообщение приветствия в ЛС обновлено.', ephemeral=True)
+        async def modal_callback(modal_interaction: discord.Interaction):
+            message = input_text.value
+
+            await self.db.set_text(interaction.guild.id, message, "dm")
+
+            await modal_interaction.response.send_message('### Сообщение приветствия на в ЛС обновлено.',
+                                                          ephemeral=True)
+
+        modal.on_submit = modal_callback
+
+        await interaction.response.send_modal(modal)
 
     guild_group = app_commands.Group(
         name='guild-greet',
-        description='Управление приветствиями для новых участников в гильдии',
+        description='Управление приветствиями для новых участников на сервере',
         guild_only=True,
         default_permissions=discord.Permissions(administrator=True)
     )
 
-    @guild_group.command(name='toggle', description='Включить/выключить приветствие в гильдии')
+    @guild_group.command(name='toggle', description='Включить/выключить приветствие на сервере')
     @app_commands.default_permissions(administrator=True)
     async def toggle_guild_greet(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
@@ -87,32 +99,44 @@ class Greeting(commands.Cog):
         settings.channel_enabled = not settings.channel_enabled
         if settings.channel_enabled and not settings.channel_text:
             return await interaction.response.send_message(
-                'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
+                'Пожалуйста, сначала установите сообщение приветствия на сервере с помощью команды `/guild-greet set-message`.',
                 ephemeral=True
             )
         if settings.channel_enabled and not settings.guild_channel:
             return await interaction.response.send_message(
-                'Пожалуйста, сначала установите канал для приветствий в гильдии с помощью команды `/guild-greet set-channel`.',
+                'Пожалуйста, сначала установите канал для приветствий на сервере с помощью команды `/guild-greet set-channel`.',
                 ephemeral=True
             )
 
         await self.db.set_enabled(interaction.guild.id, "channel", settings.channel_enabled)
 
         status = 'включено' if settings.channel_enabled else 'выключено'
-        await interaction.response.send_message(f'### Приветствие в гильдии {status}.', ephemeral=True)
+        await interaction.response.send_message(f'### Приветствие на сервере {status}.', ephemeral=True)
 
-    @guild_group.command(name='set-message', description='Установить сообщение приветствия в гильдии')
+    @guild_group.command(name='set-message', description='Установить сообщение приветствия на сервере')
     @app_commands.default_permissions(administrator=True)
     @app_commands.describe(message='Сообщение приветствия')
-    async def set_guild_greet_message(self, interaction: discord.Interaction, message: str):
+    async def set_guild_greet_message(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
 
-        settings.channel_text = message
-        await self.db.set_text(interaction.guild.id, message, "channel")
+        modal = discord.ui.Modal(title='Новое сообщение приветствия', timeout=None)
+        input_text = discord.ui.TextInput(label='Сообщение приветствия', style=TextStyle.long,
+                                          default=settings.channel_text or '')
+        modal.add_item(input_text)
 
-        await interaction.response.send_message('### Сообщение приветствия в гильдии обновлено.', ephemeral=True)
+        async def modal_callback(modal_interaction: discord.Interaction):
+            message = input_text.value
 
-    @guild_group.command(name='set-channel', description='Установить канал для приветствий в гильдии')
+            await self.db.set_text(interaction.guild.id, message, "channel")
+
+            await modal_interaction.response.send_message('### Сообщение приветствия на сервере обновлено.',
+                                                          ephemeral=True)
+
+        modal.on_submit = modal_callback
+
+        await interaction.response.send_modal(modal)
+
+    @guild_group.command(name='set-channel', description='Установить канал для приветствий на сервере')
     @app_commands.default_permissions(administrator=True)
     @app_commands.describe(channel='Канал для приветствий')
     async def set_guild_greet_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
