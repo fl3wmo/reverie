@@ -84,21 +84,21 @@ class Greeting(commands.Cog):
     async def toggle_guild_greet(self, interaction: discord.Interaction):
         settings = await self.db.get_settings(interaction.guild.id)
 
-        settings.guild_enabled = not settings.guild_enabled
-        if settings.guild_enabled and not settings.channel_text:
+        settings.channel_enabled = not settings.channel_enabled
+        if settings.channel_enabled and not settings.channel_text:
             return await interaction.response.send_message(
                 'Пожалуйста, сначала установите сообщение приветствия в гильдии с помощью команды `/guild-greet set-message`.',
                 ephemeral=True
             )
-        if settings.guild_enabled and not settings.guild_channel:
+        if settings.channel_enabled and not settings.guild_channel:
             return await interaction.response.send_message(
                 'Пожалуйста, сначала установите канал для приветствий в гильдии с помощью команды `/guild-greet set-channel`.',
                 ephemeral=True
             )
 
-        await self.db.set_enabled(interaction.guild.id, "channel", settings.guild_enabled)
+        await self.db.set_enabled(interaction.guild.id, "channel", settings.channel_enabled)
 
-        status = 'включено' if settings.guild_enabled else 'выключено'
+        status = 'включено' if settings.channel_enabled else 'выключено'
         await interaction.response.send_message(f'### Приветствие в гильдии {status}.', ephemeral=True)
 
     @guild_group.command(name='set-message', description='Установить сообщение приветствия в гильдии')

@@ -19,7 +19,7 @@ def format_message(text: str, for_member: discord.Member) -> str:
 @dataclass
 class GreetingSettings:
     guild: int
-    guild_enabled: bool = False
+    channel_enabled: bool = False
     dm_enabled: bool = False
     channel_text: str = ''
     dm_text: str = ''
@@ -33,10 +33,10 @@ class GreetingSettings:
 
     @property
     def enabled(self) -> bool:
-        return self.guild_enabled or self.dm_enabled
+        return self.channel_enabled or self.dm_enabled
 
     async def greet(self, new_member: discord.Member) -> None:
-        if self.guild_enabled and self.channel_text:
+        if self.channel_enabled and self.channel_text:
             channel = new_member.guild.get_channel(self.guild_channel) or new_member.guild.system_channel
             if channel:
                 await channel.send(format_message(self.channel_text, new_member))
