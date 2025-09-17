@@ -29,13 +29,13 @@ class PunishmentsBase(commands.Cog, name='punishments'):
 
     @app_commands.command(name='alist', description='Выводит список нарушений пользователя')
     @app_commands.describe(user='ID пользователя для вывода списка нарушений',
-                           global_alist='Выводить нарушения на всех серверах (DS+)')
+                           global_alist='Выводить нарушения на всех серверах')
     @app_commands.rename(user='id-пользователя', global_alist='глобальный')
     @app_commands.default_permissions(manage_nicknames=True)
     @security.restricted(security.PermissionLevel.MD)
     async def alist(self, interaction: discord.Interaction, user: str, global_alist: bool = False):
         owner = interaction.user
-        if global_alist and security.user_level(owner) <= security.PermissionLevel.DS:
+        if global_alist and security.user_level(owner) <= security.PermissionLevel.SPEC:
             raise ValueError('Недостаточно прав для просмотра глобального списка')
 
         _, user = await self.bot.getch_any(interaction.guild, user)

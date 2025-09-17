@@ -12,14 +12,18 @@ class PermissionLevel(enum.IntEnum):
     SMD = 2
     AD = 3
     GMD = 4
-    DS = 5
+    SPEC = 5
     CUR = 7
 
 
+#  Role tag, Role name
 _moderator_levels = {
-    3: ('MD', "Moderator"),
-    6: ('A', 'Admin'),
-    8: ('A+', "Chief Admin")
+    1: ('MD', "Модератор"),
+    2: ('SMD', "Старший модератор"),
+    3: ('AD', "Ассистент"),
+    4: ('GMD', "Главный модератор"),
+    5: ('SPEC', "Следящий"),
+    7: ('CUR', "Curator"),
 }
 
 
@@ -58,7 +62,7 @@ def reviewers(guild: discord.Guild) -> list[discord.Role]:
     roles = []
     for role in guild.roles:
         for level, moderator_role in _moderator_levels.items():
-            if level in [PermissionLevel.GMD, PermissionLevel.DS] and moderator_role[1] in role.name:
+            if level in [PermissionLevel.GMD, PermissionLevel.SPEC] and moderator_role[1] in role.name:
                 roles.append(role)
     return roles
 

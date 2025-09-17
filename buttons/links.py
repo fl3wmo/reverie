@@ -1,6 +1,6 @@
 import discord
 
-forum_link = 'https://forum.radmir.games'
+from config import forum_link
 
 
 class ForumLink(discord.ui.View):
@@ -9,7 +9,7 @@ class ForumLink(discord.ui.View):
         self.add_item(
             discord.ui.Button(
                 style=discord.ButtonStyle.link,
-                url=forum_link + '/forums/422/',
+                url=forum_link,
                 emoji='📝', label="Подать жалобу"
             )
         )

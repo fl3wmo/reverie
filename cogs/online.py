@@ -147,7 +147,7 @@ class OnlineCog(commands.Cog):
         date='Дата в формате dd.mm.YYYY'
     )
     @app_commands.autocomplete(date=autocompletes.date)
-    @security.restricted(security.PermissionLevel.DS)
+    @security.restricted(security.PermissionLevel.SPEC)
     async def admin_online(self, interaction: discord.Interaction, date: str):
         if not is_date_valid(date):
             raise ValueError('Неверный формат даты. Формат: dd.mm.YYYY.\nПример: 07.07.2077')

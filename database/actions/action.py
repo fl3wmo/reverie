@@ -5,6 +5,7 @@ from typing import Literal
 import discord
 
 import buttons
+from config import _log_channels
 from core import security, templates, features
 
 type action = Literal[
@@ -24,17 +25,10 @@ def _action_category(action_type: action, fast: bool = False) -> str:
     return 'roles' if 'role' in action_type else 'punishments' if not fast else 'punishments_fast'
 
 
-_log_channels = {
-    'roles': ["логи-ролей"],
-    'punishments': ["выдача-наказаний", 'punishments'],
-    'punishments_fast': ['запрос-на-выдачу', 'punishments']
-}
-
-
 def gmd_indicator() -> discord.ui.View:
     view = discord.ui.View()
     view.add_item(
-        discord.ui.Button(label='Выдано от GMD+', emoji='\N{THUMBS UP SIGN}', style=discord.ButtonStyle.secondary,
+        discord.ui.Button(label='Выдано главной модерацией', emoji='\N{THUMBS UP SIGN}', style=discord.ButtonStyle.secondary,
                           disabled=True))
     return view
 
@@ -170,6 +164,3 @@ class Act:
             return
         except Exception as e:
             print(e)
-
-    async def set_prove_link(self, link: str) -> None:
-        await self.db.set_prove_link(self.id, link)

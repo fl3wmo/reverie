@@ -20,7 +20,7 @@ class RolesetCog(commands.Cog):
         if old_level == new_level:
             return
             
-        head_mod_levels = [security.PermissionLevel.GMD, security.PermissionLevel.DS]
+        head_mod_levels = [security.PermissionLevel.GMD, security.PermissionLevel.SPEC]
         is_new_head_mod = new_level in head_mod_levels and old_level not in head_mod_levels
         is_removed_head_mod = new_level not in head_mod_levels and old_level in head_mod_levels
 
